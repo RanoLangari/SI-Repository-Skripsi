@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 dotenv.config();
-const saltRounds = 10;
+const saltRounds = 15;
 
 export const registerMahasiswa = async (req, res) => {
     try {
