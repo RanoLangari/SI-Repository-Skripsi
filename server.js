@@ -25,6 +25,9 @@ app.set("view engine", "ejs");
 app.use(Express.json());
 app.use(Express.urlencoded({ extended: true }));
 
+app.get("/", (req, res) => {
+  res.render("dashboard");
+});
 app.get("/login-mhs", (req, res) => {
   res.render("auth/login-mhs");
 });

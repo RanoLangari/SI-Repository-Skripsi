@@ -16,6 +16,20 @@ export const registerMahasiswa = async (req, res) => {
       password,
       confirm_password,
     } = req.body;
+    if (
+      !nim ||
+      !nama ||
+      !jurusan ||
+      !semester ||
+      !status_kelulusan ||
+      !password ||
+      !confirm_password
+    ) {
+      return res.status(400).send({
+        message: "Data tidak lengkap",
+      });
+    }
+
     if (password !== confirm_password) {
       return res.status(400).send({
         message: "Password tidak sama",
