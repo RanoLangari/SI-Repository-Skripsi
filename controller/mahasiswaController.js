@@ -2,8 +2,15 @@ import db from "../utils/dbFirestore.js";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
+import { Storage } from "@google-cloud/storage";
+import path from "path";
 dotenv.config();
 const saltRounds = 15;
+
+const storage = new Storage({
+  projectId: process.env.PROJECT_ID,
+  keyFilename: process.env.BUCKET_KEY,
+});
 
 export const registerMahasiswa = async (req, res) => {
   try {
@@ -88,6 +95,8 @@ export const loginMahasiswa = async (req, res) => {
       process.env.SECRET_KEY,
       { expiresIn: "1h" }
     );
+    // set header authorization
+    res.set("Authorization", `Bearer ${token}`);
     res.status(200).send({
       status: "success",
       message: "Login berhasil",
@@ -95,6 +104,97 @@ export const loginMahasiswa = async (req, res) => {
         id: snapshot.docs[0].id,
         token,
       },
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const uploadSkripsi = async (req, res) => {
+  try {
+    const file = req.files.file;
+    const { id } = req.user;
+    const { pembimbing1, pembimbing2, penguji, judul_skripsi } = req.body;
+    if (!file) {
+      return res.status(400).send({
+        message: "Mohon Masukan FIle",
+      });
+    }
+    if (!pembimbing1 || !pembimbing2 || !penguji || !judul_skripsi) {
+      return res.status(400).send({
+        message: "Data tidak lengkap",
+      });
+    }
+
+    // upload file to google cloud storage
+    const bucket = storage.bucket(process.env.BUCKET_NAME);
+    const blob = bucket.file(id + path.extname(file.name));
+    const blobStream = blob.createWriteStream();
+    blobStream.on("error", (err) => {
+      console.log(err);
+    });
+    blobStream.on("finish", async () => {
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+      const query = db.collection("mahasiswa").doc(id);
+      const data = {
+        skripsi_url: publicUrl,
+        pembimbing1,
+        pembimbing2,
+        penguji,
+        judul_skripsi,
+      };
+      const result = await query.update(data);
+      if (!result) {
+        return res.status(400).send({
+          message: "Gagal upload skripsi",
+        });
+      }
+      res.status(200).send({
+        status: "success",
+        message: "Skripsi berhasil diupload",
+        data: {
+          skripsi: publicUrl,
+        },
+      });
+    });
+    blobStream.end(file.data);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getSkripsi = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const query = db.collection("mahasiswa");
+    const snapshot = await query.where("skripsi_url", "!=", null).get();
+    if (snapshot.empty) {
+      return res.status(400).send({
+        message: "Data tidak ditemukan",
+      });
+    }
+    const result = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    const data = snapshot.docs.find((doc) => doc.id === id).data();
+    const mapData = result.map((item) => ({
+      nama: item.nama,
+      jurusan: item.jurusan,
+      skripsi_url: item.skripsi_url,
+      pembimbing1: item.pembimbing1,
+      pembimbing2: item.pembimbing2,
+      penguji: item.penguji,
+      judul_skripsi: item.judul_skripsi,
+    }));
+
+    if (!data) {
+      return res.status(400).send({
+        message: "Data tidak ditemukan",
+      });
+    }
+    res.render("dashboard", {
+      data: mapData,
     });
   } catch (error) {
     console.log(error);

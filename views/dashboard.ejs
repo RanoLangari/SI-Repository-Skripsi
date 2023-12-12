@@ -1,125 +1,105 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- load tailwind from cdn -->
-    <script src="https://cdn.tailwindcss.com"></script>
+<%- include('./partials/header') %>
 
-    <!-- load font awesome -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css"
-    />
-    <link rel="stylesheet" href="./style/style.css" />
-    <link rel="shortcut icon" href="./img/undana.png" type="image/x-icon" />
-    <title>Dashboard</title>
-  </head>
-  <body>
-    <!-- create modern navbar using tailwind css -->
-    <nav
-      class="flex items-center justify-between flex-wrap bg-white p-6 shadow-lg"
-    >
-      <div class="flex items-center flex-shrink-0 text-black mr-6">
-        <a href="/dashboard">
-          <img src="./img/FEB.png" alt="" class="h-10" />
-        </a>
-      </div>
-
-      <div class="block lg:hidden">
-        <button
-          class="flex items-center px-3 py-2 border rounded text-black border-black hover:text-black hover:border-black"
-          id="navbar-toggle"
-        >
-          <svg
-            class="fill-current h-3 w-3"
-            viewBox="0 0 20 20"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <title>Menu</title>
-            <path
-              d="M0 0h20v20H0V0zm2 14h16v-2H2v2zm0-5h16V7H2v2zm0-5h16V2H2v2z"
-            />
-          </svg>
-        </button>
-      </div>
-
-      <div
-        class="w-full block flex-grow lg:flex lg:items-center lg:w-auto hidden"
-        id="navbar-menu"
+<!-- create modern dashboard using tailwind css -->
+<div class="flex flex-col md:flex-row">
+  <!-- show list skripsi -->
+  <div class="w-full md:w-3/4 bg-white rounded-lg shadow-lg p-6">
+    <div class="flex justify-between items-center">
+      <h2 class="text-2xl font-bold">Daftar Skripsi</h2>
+      <a
+        href="/skripsi/create"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        >Tambah Skripsi</a
       >
-        <div class="text-sm lg:flex-grow">
-          <a
-            href="/dashboard"
-            class="block mt-4 lg:inline-block lg:mt-0 text-black hover:text-black mr-4"
-          >
-            <i class="fas fa-home"></i> Dashboard
-          </a>
+    </div>
+    <div class="overflow-x-auto mt-6">
+      <table class="table-auto border-collapse w-full">
+        <thead>
+          <tr class="rounded-lg text-sm font-medium text-gray-700 text-left">
+            <th class="px-4 py-2 bg-gray-200" style="background-color:#f8f8f8">
+              No
+            </th>
+            <th class="px-4 py-2" style="background-color:#f8f8f8">Judul</th>
+            <th class="px-4 py-2" style="background-color:#f8f8f8">Status</th>
+            <th class="px-4 py-2" style="background-color:#f8f8f8">Aksi</th>
+          </tr>
+        </thead>
+        <tbody class="text-sm font-normal text-gray-700">
+          <% skripsi.forEach((skripsi, index) => { %>
+          <tr class="hover:bg-gray-100 border-b border-gray-200 py-10">
+            <td class="px-4 py-4"><%= index + 1 %></td>
+            <td class="px-4 py-4"><%= skripsi.judul %></td>
+            <td class="px-4 py-4">
+              <% if (skripsi.status == 'diterima') { %>
+              <span class="bg-green-200 text-green-600 py-1 px-3 rounded-full text-xs">
+                <%= skripsi.status %>
+              </span>
+              <% } else if (skripsi.status == 'ditolak') { %>
+              <span class="bg-red-200 text-red-600 py-1 px-3 rounded-full text-xs">
+                <%= skripsi.status %>
+              </span>
+              <% } else
+              { %>
+              <span class="bg-yellow-200 text-yellow-600 py-1 px-3 rounded-full text-xs">
+                <%= skripsi.status %>
+              </span>
+              <% } %>
+            </td>
+            <td class="px-4 py-4">
+              <a
+                href="/skripsi/<%= skripsi.id %>"
+                class="text-blue-500 hover:text-blue-700"
+                >Detail</a
+              >
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <!-- show profile -->
+  <div class="w-full md:w-1/4 bg-white rounded-lg shadow-lg p-6 mt-6 md:mt-0">
+    <h2 class="text-2xl font-bold">Profile</h2>
+    <div class="mt-4">
+      <div class="flex items-center justify-center">
+        <img
+          src="./img/FEB.png"
+          alt=""
+          class="rounded-full h-32 w-32 object-cover"
+        />
+      </div>
+      <div class="text-center mt-4">
+        <h2 class="text-lg font-semibold">Admin</h2>
+        <div class="text-purple-500">Fakultas Ekonomi dan Bisnis</div>
+      </div>
+      <div class="mt-6">
+        <div class="text-sm font-semibold">Email</div>
+        <div class="text-sm font-normal text-gray-500">
+
         </div>
       </div>
-      <!-- div for dropdown hover profile -->
-      <div class="relative inline-block text-left">
-        <div>
-          <button
-            class="flex items-center mr-4 text-black hover:text-black focus:outline-none"
-            id="options-menu"
-            aria-haspopup="true"
-            aria-expanded="true"
-          >
-            <i class="fas fa-user-circle fa-2x"></i>
-            <p class="ml-2">Profile</p>
-          </button>
+      <div class="mt-2">
+        <div class="text-sm font-semibold">NIP</div>
+        <div class="text-sm font-normal text-gray-500">
+
         </div>
-        <!-- div for dropdown menu -->
-        <div
-          class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden"
-          id="dropdown-menu"
+      </div>
+      <div class="mt-2">
+        <div class="text-sm font-semibold">No. HP</div>
+        <div class="text-sm font-normal text-gray-500">
+
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-center">
+        <a
+          href="/logout"
+          class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          >Logout</a
         >
-          <div
-            class="py-1"
-            role="menu"
-            aria-orientation="vertical"
-            aria-labelledby="options-menu"
-          >
-            <a
-              href="/"
-              class="block px-4 py-2 text-sm text-black hover:bg-gray-100 hover:text-black"
-              role="menuitem"
-              >Logout</a
-            >
-          </div>
-        </div>
       </div>
-    </nav>
-
-    <!-- create modern footer using tailwind-->
-    <footer class="text-center text-black p-4 absolute bottom-0 w-full">
-      <p class="text-center text-gray-500 text-xs">
-        &copy;2023 FEB UNDANA. All rights reserved.
-      </p>
-    </footer>
-
-    <!-- load font awesome -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js"></script>
-
-    <!-- load sweet alert -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
-
-    <!-- load jquery -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
-    <script>
-      // navbar toggle function
-      $("#navbar-toggle").click(function (e) {
-        e.preventDefault();
-        $("#navbar-menu").toggleClass("hidden");
-      });
-
-      // dropdown toggle function
-      $("#options-menu").click(function (e) {
-        e.preventDefault();
-        $("#dropdown-menu").toggleClass("hidden");
-      });
-    </script>
-  </body>
-</html>
+    </div>
+  </div>
+</div>
+<%- include('./partials/footer') %>
