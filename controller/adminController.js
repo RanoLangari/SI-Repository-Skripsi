@@ -11,7 +11,7 @@ export const loginAdmin = async (req, res) => {
     const query = db.collection("admin").where("username", "==", username);
     const snapshot = await query.get();
     if (snapshot.empty) {
-      return res.status(200).send({
+      return res.status(400).send({
         status: "error",
         message: "Username tidak terdaftar",
       });
@@ -19,7 +19,7 @@ export const loginAdmin = async (req, res) => {
     const user = snapshot.docs[0].data();
     const isPasswordMatch = bcrypt.compareSync(password, user.password);
     if (!isPasswordMatch) {
-      return res.status(200).send({
+      return res.status(400).send({
         status: "error",
         message: "Password salah",
       });

@@ -1,11 +1,9 @@
 import Express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import ejs from "ejs";
 import adminRoutes from "./routes/adminRoutes.js";
 import MahasiswaRoutes from "./routes/mahasiswaRoutes.js";
 import fileUpload from "express-fileupload";
-// import expressEjsLayouts from "express-ejs-layouts";
 
 dotenv.config();
 const port = process.env.PORT || 5000;
@@ -20,11 +18,6 @@ app.use(
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   })
 );
-
-app.use(Express.static("public"));
-app.set("view engine", "ejs");
-// app.use(expressEjsLayouts);
-// app.set("layout", "partials/layout");
 
 app.use(Express.json());
 app.use(Express.urlencoded({ extended: true }));

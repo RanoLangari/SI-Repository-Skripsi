@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const isAuthorized = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+  const authHeader = req.headers["authorization"];
+  console.log(authHeader);
   const token = authHeader && authHeader.split(" ")[1];
   if (token == null) {
     return res.status(401).json({ message: "Token tidak ditemukan" });

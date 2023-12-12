@@ -193,7 +193,9 @@ export const getSkripsi = async (req, res) => {
         message: "Data tidak ditemukan",
       });
     }
-    res.render("dashboard", {
+    return res.status(200).send({
+      status: "success",
+      message: "Berhasil mendapatkan data skripsi",
       data: mapData,
     });
   } catch (error) {
