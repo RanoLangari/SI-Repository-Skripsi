@@ -93,7 +93,7 @@ export const loginMahasiswa = async (req, res) => {
     const token = jwt.sign(
       { id: snapshot.docs[0].id },
       process.env.SECRET_KEY,
-      { expiresIn: "1h" }
+      { expiresIn: "1d" }
     );
     // set header authorization
     res.set("Authorization", `Bearer ${token}`);
