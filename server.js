@@ -22,19 +22,6 @@ app.use(
 app.use(Express.json());
 app.use(Express.urlencoded({ extended: true }));
 app.use(fileUpload());
-
-app.get("/", (req, res) => {
-  res.render("dashboard");
-});
-app.get("/login-mhs", (req, res) => {
-  res.render("auth/login-mhs");
-});
-app.get("/register-mhs", (req, res) => {
-  res.render("auth/register-mhs");
-});
-app.get("/login-admin", (req, res) => {
-  res.render("auth/login-admin");
-});
 app.use("/api/admin", adminRoutes);
 app.use("/api/mahasiswa", MahasiswaRoutes);
 app.use("*", (req, res) => res.status(404).json({ error: "not found" }));
