@@ -24,7 +24,9 @@ app.use(Express.urlencoded({ extended: true }));
 app.use(fileUpload());
 app.use("/api/admin", adminRoutes);
 app.use("/api/mahasiswa", MahasiswaRoutes);
-app.use("*", (req, res) => res.status(404).json({ error: "not found" }));
+app.use("*", (req, res) =>
+  res.status(404).json({ error: "Endpont Not Match" })
+);
 
 app.listen(port, () => {
   console.log(`aplikasi berjalan pada http://localhost:${port}`);
