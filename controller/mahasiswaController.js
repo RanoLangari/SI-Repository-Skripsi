@@ -179,6 +179,7 @@ export const getSkripsi = async (req, res) => {
     }));
     const data = snapshot.docs.find((doc) => doc.id === id).data();
     const mapData = result.map((item) => ({
+      id: item.id,
       nama: item.nama,
       jurusan: item.jurusan,
       skripsi_url: item.skripsi_url,
@@ -201,6 +202,11 @@ export const getSkripsi = async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+};
+
+export const getAllSkripsi = async (req, res) => {
+  try {
+  } catch (error) {}
 };
 
 export const getProfile = async (req, res) => {
