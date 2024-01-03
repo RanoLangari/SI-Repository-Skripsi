@@ -202,3 +202,24 @@ export const getSkripsi = async (req, res) => {
     console.log(error);
   }
 };
+
+export const getProfile = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const query = db.collection("mahasiswa").doc(id);
+    const snapshot = await query.get();
+    if (!snapshot.exists) {
+      return res.status(400).send({
+        message: "Data tidak ditemukan",
+      });
+    }
+    const data = snapshot.data();
+    return res.status(200).send({
+      status: "success",
+      message: "Berhasil mendapatkan data profile",
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};

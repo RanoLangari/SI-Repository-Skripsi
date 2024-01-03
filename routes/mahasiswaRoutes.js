@@ -3,6 +3,7 @@ import {
   loginMahasiswa,
   uploadSkripsi,
   getSkripsi,
+  getProfile,
 } from "../controller/mahasiswaController.js";
 import { isAuthorized } from "../utils/auth.js";
 import Express from "express";
@@ -13,8 +14,6 @@ Router.post("/register", registerMahasiswa);
 Router.post("/login", loginMahasiswa);
 Router.post("/upload-skripsi", isAuthorized, uploadSkripsi);
 Router.get("/get-skripsi", isAuthorized, getSkripsi);
-Router.get("/profile", isAuthorized, (req, res) => {
-  res.send(req.user);
-});
+Router.get("/profile", isAuthorized, getProfile);
 
 export default Router;
