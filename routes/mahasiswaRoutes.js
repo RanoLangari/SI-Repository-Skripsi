@@ -2,7 +2,8 @@ import {
   registerMahasiswa,
   loginMahasiswa,
   uploadSkripsi,
-  getSkripsi,
+  getHalfSkripsi,
+  getSkripsiById,
   getProfile,
 } from "../controller/mahasiswaController.js";
 import { isAuthorized } from "../utils/auth.js";
@@ -13,7 +14,8 @@ const Router = Express.Router();
 Router.post("/register", registerMahasiswa);
 Router.post("/login", loginMahasiswa);
 Router.post("/upload-skripsi", isAuthorized, uploadSkripsi);
-Router.get("/get-skripsi", isAuthorized, getSkripsi);
+Router.get("/get-skripsi", isAuthorized, getHalfSkripsi);
 Router.get("/profile", isAuthorized, getProfile);
+Router.get("/detail-skripsi/:id", isAuthorized, getSkripsiById);
 
 export default Router;

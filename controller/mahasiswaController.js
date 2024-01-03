@@ -120,6 +120,11 @@ export const uploadSkripsi = async (req, res) => {
         message: "Mohon Masukan FIle",
       });
     }
+    if (file.mimetype !== "application/pdf")
+      return res.status(400).send({
+        message: "File harus berupa pdf",
+      });
+
     if (!pembimbing1 || !pembimbing2 || !penguji || !judul_skripsi) {
       return res.status(400).send({
         message: "Data tidak lengkap",
@@ -163,7 +168,7 @@ export const uploadSkripsi = async (req, res) => {
   }
 };
 
-export const getSkripsi = async (req, res) => {
+export const getHalfSkripsi = async (req, res) => {
   try {
     const { id } = req.user;
     const query = db.collection("mahasiswa");
@@ -182,10 +187,6 @@ export const getSkripsi = async (req, res) => {
       id: item.id,
       nama: item.nama,
       jurusan: item.jurusan,
-      skripsi_url: item.skripsi_url,
-      pembimbing1: item.pembimbing1,
-      pembimbing2: item.pembimbing2,
-      penguji: item.penguji,
       judul_skripsi: item.judul_skripsi,
     }));
 
@@ -204,11 +205,38 @@ export const getSkripsi = async (req, res) => {
   }
 };
 
-export const getAllSkripsi = async (req, res) => {
+export const getSkripsiById = async (req, res) => {
   try {
-  } catch (error) {}
+    const id = req.params.id;
+    const query = db.collection("mahasiswa").doc(id);
+    const snapshot = await query.get();
+    if (!snapshot.exists) {
+      return res.status(400).send({
+        message: "Data tidak ditemukan",
+      });
+    }
+    const data = snapshot.data();
+    const mapData = {
+      id: snapshot.id,
+      nim: data.nim,
+      nama: data.nama,
+      jurusan: data.jurusan,
+      abstract: data.abstract,
+      pembimbing1: data.pembimbing1,
+      pembimbing2: data.pembimbing2,
+      penguji: data.penguji,
+      judul_skripsi: data.judul_skripsi,
+      skripsi_url: data.skripsi_url,
+    };
+    return res.status(200).send({
+      status: "success",
+      message: "Berhasil mendapatkan data skripsi",
+      data: mapData,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
-
 export const getProfile = async (req, res) => {
   try {
     const { id } = req.user;
