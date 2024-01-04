@@ -130,7 +130,6 @@ export const uploadSkripsi = async (req, res) => {
         message: "Data tidak lengkap",
       });
     }
-
     // upload file to google cloud storage
     const bucket = storage.bucket(process.env.BUCKET_NAME);
     const blob = bucket.file(id + path.extname(file.name));
@@ -248,10 +247,18 @@ export const getProfile = async (req, res) => {
       });
     }
     const data = snapshot.data();
+    const mapingData = {
+      id: snapshot.id,
+      nim: data.nim,
+      nama: data.nama,
+      jurusan: data.jurusan,
+      semester: data.semester,
+      status_kelulusan: data.status_kelulusan,
+    };
     return res.status(200).send({
       status: "success",
       message: "Berhasil mendapatkan data profile",
-      data,
+      data: mapingData,
     });
   } catch (error) {
     console.log(error);
