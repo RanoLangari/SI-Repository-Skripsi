@@ -264,3 +264,44 @@ export const getProfile = async (req, res) => {
     console.log(error);
   }
 };
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const { nim, nama, jurusan, semester, status_kelulusan } = req.body;
+    const query = db.collection("mahasiswa").doc(id);
+    const snapshot = await query.get();
+    if (!snapshot.exists) {
+      return res.status(400).send({
+        message: "Data tidak ditemukan",
+      });
+    }
+    const data = snapshot.data();
+    const mapingData = {
+      id: snapshot.id,
+      nim: data.nim,
+      nama: data.nama,
+      jurusan: data.jurusan,
+      semester: data.semester,
+      status_kelulusan: data.status_kelulusan,
+    };
+    const result = await query.update({
+      nim: nim || mapingData.nim,
+      nama: nama || mapingData.nama,
+      jurusan: jurusan || mapingData.jurusan,
+      semester: semester || mapingData.semester,
+      status_kelulusan: status_kelulusan || mapingData.status_kelulusan,
+    });
+    if (!result) {
+      return res.status(400).send({
+        message: "Gagal update profile",
+      });
+    }
+    return res.status(200).send({
+      status: "success",
+      message: "Berhasil update profile",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
