@@ -13,6 +13,7 @@ const storage = new Storage({
 });
 
 export const registerMahasiswa = async (req, res) => {
+  console.log(req.body);
   try {
     const {
       nim,
@@ -64,7 +65,7 @@ export const registerMahasiswa = async (req, res) => {
         message: "Register gagal",
       });
     }
-    res.status(200).send({
+    return res.status(200).send({
       status: "success",
       message: "Register berhasil",
     });
@@ -183,7 +184,6 @@ export const uploadSkripsi = async (req, res) => {
 
 export const getHalfSkripsi = async (req, res) => {
   try {
-    const { id } = req.user;
     const query = db.collection("mahasiswa");
     const snapshot = await query.where("skripsi_url", "!=", null).get();
     if (snapshot.empty) {
@@ -195,19 +195,12 @@ export const getHalfSkripsi = async (req, res) => {
       id: doc.id,
       ...doc.data(),
     }));
-    const data = snapshot.docs.find((doc) => doc.id === id).data();
     const mapData = result.map((item) => ({
       id: item.id,
       nama: item.nama,
       jurusan: item.jurusan,
       judul_skripsi: item.judul_skripsi,
     }));
-
-    if (!data) {
-      return res.status(400).send({
-        message: "Data tidak ditemukan",
-      });
-    }
     return res.status(200).send({
       status: "success",
       message: "Berhasil mendapatkan data skripsi",
