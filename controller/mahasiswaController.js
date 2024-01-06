@@ -112,9 +112,16 @@ export const loginMahasiswa = async (req, res) => {
 
 export const uploadSkripsi = async (req, res) => {
   try {
+    if (!req.files) {
+      return res.status(400).send({
+        message: "Mohon Masukan FIle",
+      });
+    }
     const file = req.files.file;
+    console.log(file);
     const { id } = req.user;
-    const { pembimbing1, pembimbing2, penguji, judul_skripsi } = req.body;
+    const { pembimbing1, pembimbing2, penguji, judul_skripsi, abstract } =
+      req.body;
     if (!file) {
       return res.status(400).send({
         message: "Mohon Masukan FIle",
@@ -125,7 +132,13 @@ export const uploadSkripsi = async (req, res) => {
         message: "File harus berupa pdf",
       });
 
-    if (!pembimbing1 || !pembimbing2 || !penguji || !judul_skripsi) {
+    if (
+      !pembimbing1 ||
+      !pembimbing2 ||
+      !penguji ||
+      !judul_skripsi ||
+      !abstract
+    ) {
       return res.status(400).send({
         message: "Data tidak lengkap",
       });
@@ -146,6 +159,7 @@ export const uploadSkripsi = async (req, res) => {
         pembimbing2,
         penguji,
         judul_skripsi,
+        abstract,
       };
       const result = await query.update(data);
       if (!result) {
@@ -247,18 +261,11 @@ export const getProfile = async (req, res) => {
       });
     }
     const data = snapshot.data();
-    const mapingData = {
-      id: snapshot.id,
-      nim: data.nim,
-      nama: data.nama,
-      jurusan: data.jurusan,
-      semester: data.semester,
-      status_kelulusan: data.status_kelulusan,
-    };
+
     return res.status(200).send({
       status: "success",
       message: "Berhasil mendapatkan data profile",
-      data: mapingData,
+      data,
     });
   } catch (error) {
     console.log(error);
