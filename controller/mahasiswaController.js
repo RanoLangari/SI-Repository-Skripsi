@@ -278,7 +278,6 @@ export const updateProfile = async (req, res) => {
     }
     const data = snapshot.data();
     const mapingData = {
-      id: snapshot.id,
       nim: data.nim,
       nama: data.nama,
       jurusan: data.jurusan,
