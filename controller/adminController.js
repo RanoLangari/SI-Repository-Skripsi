@@ -25,7 +25,7 @@ export const loginAdmin = async (req, res) => {
       });
     }
     const token = jwt.sign(
-      { email: user.email, username: user.username },
+      { id: snapshot.docs[0].id },
       process.env.SECRET_KEY,
       { expiresIn: "1d" }
     );

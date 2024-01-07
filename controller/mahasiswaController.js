@@ -125,7 +125,9 @@ export const checkLoginMahasiswa = async (req, res) => {
       status: "success",
       message: "Data ditemukan",
     });
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export const uploadSkripsi = async (req, res) => {
