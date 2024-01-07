@@ -111,6 +111,23 @@ export const loginMahasiswa = async (req, res) => {
   }
 };
 
+export const checkLoginMahasiswa = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const query = db.collection("mahasiswa").doc(id);
+    const snapshot = await query.get();
+    if (!snapshot.exists) {
+      return res.status(400).send({
+        message: "Data tidak ditemukan",
+      });
+    }
+    return res.status(200).send({
+      status: "success",
+      message: "Data ditemukan",
+    });
+  } catch (error) {}
+};
+
 export const uploadSkripsi = async (req, res) => {
   try {
     if (!req.files) {
