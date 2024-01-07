@@ -74,6 +74,26 @@ export const createAdmin = async (req, res) => {
   }
 };
 
+export const checkLoginAdmin = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const query = db.collection("admin").doc(id);
+    const snapshot = await query.get();
+    if (!snapshot.exists) {
+      return res.status(400).send({
+        status: "error",
+        message: "Data tidak ditemukan",
+      });
+    }
+    res.status(200).send({
+      status: "success",
+      message: "Data Ditemukan",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const getAdmin = async (req, res) => {
   try {
     const query = db.collection("admin");
