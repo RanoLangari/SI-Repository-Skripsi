@@ -6,6 +6,7 @@ import {
   getSkripsiById,
   getProfile,
   updateProfile,
+  getSkripsiByJurusan,
 } from "../controller/mahasiswaController.js";
 import { isAuthorized } from "../utils/auth.js";
 import Express from "express";

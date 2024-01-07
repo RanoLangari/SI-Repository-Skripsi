@@ -304,3 +304,34 @@ export const updateProfile = async (req, res) => {
     console.log(error);
   }
 };
+
+export const getSkripsiByJurusan = async (req, res) => {
+  try {
+    const { jurusan } = req.query;
+    console.log(jurusan);
+    const query = db.collection("mahasiswa");
+    const snapshot = await query.where("jurusan", "==", jurusan).get();
+    if (snapshot.empty) {
+      return res.status(400).send({
+        message: "Data tidak ditemukan",
+      });
+    }
+    const result = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    const mapData = result.map((item) => ({
+      id: item.id,
+      nama: item.nama,
+      jurusan: item.jurusan,
+      judul_skripsi: item.judul_skripsi,
+    }));
+    return res.status(200).send({
+      status: "success",
+      message: "Berhasil mendapatkan data skripsi",
+      data: mapData,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
