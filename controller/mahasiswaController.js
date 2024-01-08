@@ -244,15 +244,14 @@ export const getSkripsiById = async (req, res) => {
     const data = snapshot.data();
     const mapData = {
       id: snapshot.id,
-      nim: data.nim,
       nama: data.nama,
       jurusan: data.jurusan,
-      abstract: data.abstract,
-      pembimbing1: data.pembimbing1,
-      pembimbing2: data.pembimbing2,
-      penguji: data.penguji,
-      judul_skripsi: data.judul_skripsi,
-      skripsi_url: data.skripsi_url,
+      judul_skripsi: data.skripsi.judul_skripsi,
+      abstract: data.skripsi.abstract,
+      skripsi_url: data.skripsi.skripsi_url,
+      pembimbing1: data.skripsi.pembimbing1,
+      pembimbing2: data.skripsi.pembimbing2,
+      penguji: data.skripsi.penguji,
     };
     return res.status(200).send({
       status: "success",
