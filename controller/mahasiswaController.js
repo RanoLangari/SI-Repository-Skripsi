@@ -138,7 +138,6 @@ export const uploadSkripsi = async (req, res) => {
       });
     }
     const file = req.files.file;
-    console.log(file);
     const { id } = req.user;
     const { pembimbing1, pembimbing2, penguji, judul_skripsi, abstract } =
       req.body;
@@ -163,6 +162,14 @@ export const uploadSkripsi = async (req, res) => {
         message: "Data tidak lengkap",
       });
     }
+    const checkSkripsi = await db.collection("mahasiswa").doc(id).get();
+    if (checkSkripsi.data().skripsi) {
+      return res.status(400).send({
+        message:
+          "Skripsi sudah diupload, untuk mengubah dan menghapus, buka halaman profile",
+      });
+    }
+
     // upload file to google cloud storage
     const bucket = storage.bucket(process.env.BUCKET_NAME);
     const blob = bucket.file(id + path.extname(file.name));
@@ -181,7 +188,9 @@ export const uploadSkripsi = async (req, res) => {
         judul_skripsi,
         abstract,
       };
-      const result = await query.update(data);
+      const result = await query.update({
+        skripsi: data,
+      });
       if (!result) {
         return res.status(400).send({
           message: "Gagal upload skripsi",
@@ -220,7 +229,6 @@ export const getHalfSkripsi = async (req, res) => {
       jurusan: item.jurusan,
       judul_skripsi: item.skripsi.judul_skripsi,
     }));
-    console.log(mapData);
     return res.status(200).send({
       status: "success",
       message: "Berhasil mendapatkan data skripsi",
