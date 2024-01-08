@@ -204,7 +204,7 @@ export const uploadSkripsi = async (req, res) => {
 export const getHalfSkripsi = async (req, res) => {
   try {
     const query = db.collection("mahasiswa");
-    const snapshot = await query.where("skripsi_url", "!=", null).get();
+    const snapshot = await query.where("skripsi", "!=", null).get();
     if (snapshot.empty) {
       return res.status(400).send({
         message: "Data tidak ditemukan",
@@ -218,8 +218,9 @@ export const getHalfSkripsi = async (req, res) => {
       id: item.id,
       nama: item.nama,
       jurusan: item.jurusan,
-      judul_skripsi: item.judul_skripsi,
+      judul_skripsi: item.skripsi.judul_skripsi,
     }));
+    console.log(mapData);
     return res.status(200).send({
       status: "success",
       message: "Berhasil mendapatkan data skripsi",
