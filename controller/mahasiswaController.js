@@ -212,6 +212,7 @@ export const uploadSkripsi = async (req, res) => {
 
 export const getHalfSkripsi = async (req, res) => {
   try {
+    const { id } = req.user;
     const query = db.collection("mahasiswa");
     const snapshot = await query.where("skripsi", "!=", null).get();
     if (snapshot.empty) {
@@ -229,6 +230,36 @@ export const getHalfSkripsi = async (req, res) => {
       jurusan: item.jurusan,
       judul_skripsi: item.skripsi.judul_skripsi,
     }));
+    return res.status(200).send({
+      status: "success",
+      message: "Berhasil mendapatkan data skripsi",
+      data: mapData,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getSkripsiStatus = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const query = db.collection("mahasiswa").doc(id);
+    const snapshot = await query.get();
+    if (!snapshot.exists) {
+      return res.status(400).send({
+        message: "Data tidak ditemukan",
+      });
+    }
+    const item = snapshot.data();
+    const mapData = {
+      status_skripsi: item.skripsi.status,
+      judul_skripsi: item.skripsi.judul_skripsi,
+      abstract: item.skripsi.abstract,
+      skripsi_url: item.skripsi.skripsi_url,
+      pembimbing1: item.skripsi.pembimbing1,
+      pembimbing2: item.skripsi.pembimbing2,
+      penguji: item.skripsi.penguji,
+    };
     return res.status(200).send({
       status: "success",
       message: "Berhasil mendapatkan data skripsi",

@@ -8,6 +8,7 @@ import {
   updateProfile,
   getSkripsiByJurusan,
   checkLoginMahasiswa,
+  getSkripsiStatus,
 } from "../controller/mahasiswaController.js";
 import { isAuthorized } from "../utils/auth.js";
 import Express from "express";
@@ -22,5 +23,6 @@ Router.get("/get-skripsi", isAuthorized, getHalfSkripsi);
 Router.get("/profile", isAuthorized, getProfile);
 Router.put("/profile", isAuthorized, updateProfile);
 Router.get("/detail-skripsi/:id", isAuthorized, getSkripsiById);
+Router.get("/skripsi-status", isAuthorized, getSkripsiStatus);
 
 export default Router;
