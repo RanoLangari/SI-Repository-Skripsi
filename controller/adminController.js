@@ -111,3 +111,21 @@ export const getAdmin = async (req, res) => {
     console.log(error);
   }
 };
+
+export const getSkripsiProcess = async (req, res) => {
+  try {
+    const query = db.collection("mahasiswa");
+    const snapshot = await query.where("skripsi.status", "==", "proses").get();
+    const result = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    res.status(200).send({
+      status: "success",
+      message: "Berhasil mendapatkan data mahasiswa",
+      data: result,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
