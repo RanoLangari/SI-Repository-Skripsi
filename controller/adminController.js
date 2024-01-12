@@ -97,16 +97,18 @@ export const checkLoginAdmin = async (req, res) => {
 export const getAdmin = async (req, res) => {
   try {
     const { id } = req.user;
-    const query = db.collection("admin");
-    const snapshot = await query.where("id", "==", id).get();
-    const result = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const query = db.collection("admin").doc(id);
+    const snapshot = await query.get();
+    if (!snapshot.exists) {
+      return res.status(400).send({
+        status: "error",
+        message: "Data tidak ditemukan",
+      });
+    }
     res.status(200).send({
       status: "success",
-      message: "Berhasil mendapatkan data admin",
-      data: result,
+      message: "Data Ditemukan",
+      data: snapshot.data(),
     });
   } catch (error) {
     console.log(error);
