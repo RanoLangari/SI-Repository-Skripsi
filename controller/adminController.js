@@ -96,8 +96,9 @@ export const checkLoginAdmin = async (req, res) => {
 
 export const getAdmin = async (req, res) => {
   try {
+    const { id } = req.user;
     const query = db.collection("admin");
-    const snapshot = await query.get();
+    const snapshot = await query.where("id", "==", id).get();
     const result = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
