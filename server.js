@@ -8,7 +8,6 @@ import fileUpload from "express-fileupload";
 dotenv.config();
 const port = process.env.PORT || 5000;
 const app = Express();
-
 app.use(
   cors({
     // allow all origin
@@ -29,5 +28,5 @@ app.use("*", (req, res) =>
 );
 
 app.listen(port, () => {
-  console.log(`aplikasi berjalan pada http://localhost:${port}`);
+  console.log(`server up and running on http://localhost:${port}`);
 });
