@@ -132,3 +132,26 @@ export const getSkripsiProcess = async (req, res) => {
     console.log(error);
   }
 };
+
+export const KonfirmasiSkripsi = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const query = db.collection("mahasiswa").doc(id);
+    const snapshot = await query.get();
+    if (!snapshot.exists) {
+      return res.status(400).send({
+        status: "error",
+        message: "Data tidak ditemukan",
+      });
+    }
+    await query.update({
+      "skripsi.status": "Terverifikasi",
+    });
+    res.status(200).send({
+      status: "success",
+      message: "Status skripsi berhasil diubah",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
