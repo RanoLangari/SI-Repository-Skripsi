@@ -16,5 +16,5 @@ Router.get("/check-login", isAuthorized, checkLoginAdmin);
 Router.post("/create", createAdmin);
 Router.get("/getadmin", isAuthorized, getAdmin);
 Router.get("/get-skripsi-process", isAuthorized, getSkripsiProcess);
-Router.patch("/konfirmasi-skripsi", isAuthorized, KonfirmasiSkripsi);
+Router.put("/konfirmasi-skripsi/:id", isAuthorized, KonfirmasiSkripsi);
 export default Router;

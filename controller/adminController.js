@@ -149,7 +149,7 @@ export const KonfirmasiSkripsi = async (req, res) => {
     });
     res.status(200).send({
       status: "success",
-      message: "Status skripsi berhasil diubah",
+      message: "Status skripsi Terverifikasi",
     });
   } catch (error) {
     console.log(error);
