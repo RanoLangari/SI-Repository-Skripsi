@@ -4,6 +4,7 @@ import {
   getAdmin,
   checkLoginAdmin,
   getSkripsiProcess,
+  KonfirmasiSkripsi,
 } from "../controller/adminController.js";
 import { isAuthorized } from "../utils/auth.js";
 import Express from "express";
@@ -15,4 +16,5 @@ Router.get("/check-login", isAuthorized, checkLoginAdmin);
 Router.post("/create", createAdmin);
 Router.get("/getadmin", isAuthorized, getAdmin);
 Router.get("/get-skripsi-process", isAuthorized, getSkripsiProcess);
+Router.post("/konfirmasi-skripsi", isAuthorized, KonfirmasiSkripsi);
 export default Router;
