@@ -393,3 +393,45 @@ export const getSkripsiByJurusan = async (req, res) => {
     console.log(error);
   }
 };
+
+export const changePassword = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const { old_password, new_password, confirm_password } = req.body;
+    const query = db.collection("mahasiswa").doc(id);
+    const snapshot = await query.get();
+    if (!snapshot.exists) {
+      return res.status(400).send({
+        message: "Data tidak ditemukan",
+      });
+    }
+
+    const data = snapshot.data();
+    const checkPassword = bcrypt.compareSync(old_password, data.password);
+    if (!checkPassword) {
+      return res.status(400).send({
+        message: "Password salah",
+      });
+    }
+    if (new_password !== confirm_password) {
+      return res.status(400).send({
+        message: "Password tidak sama",
+      });
+    }
+    const hashPassword = bcrypt.hashSync(new_password, saltRounds);
+    const result = await query.update({
+      password: hashPassword,
+    });
+    if (!result) {
+      return res.status(400).send({
+        message: "Gagal update password",
+      });
+    }
+    return res.status(200).send({
+      status: "success",
+      message: "Berhasil update password",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
