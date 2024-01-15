@@ -25,6 +25,6 @@ Router.get("/profile", isAuthorized, getProfile);
 Router.put("/profile", isAuthorized, updateProfile);
 Router.get("/detail-skripsi/:id", isAuthorized, getSkripsiById);
 Router.get("/skripsi-status", isAuthorized, getSkripsiStatus);
-Router.get("/change-password", isAuthorized, changePassword);
+Router.post("/change-password", isAuthorized, changePassword);
 
 export default Router;
