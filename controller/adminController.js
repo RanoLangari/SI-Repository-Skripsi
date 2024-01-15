@@ -178,3 +178,61 @@ export const deleteSkripsi = async (req, res) => {
     console.log(error);
   }
 };
+
+export const changePassword = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const { old_password, new_password } = req.body;
+    const query = db.collection("admin").doc(id);
+    const snapshot = await query.get();
+    if (!snapshot.exists) {
+      return res.status(400).send({
+        status: "error",
+        message: "Data tidak ditemukan",
+      });
+    }
+    const user = snapshot.data();
+    const isPasswordMatch = bcrypt.compareSync(old_password, user.password);
+    if (!isPasswordMatch) {
+      return res.status(400).send({
+        status: "error",
+        message: "Password salah",
+      });
+    }
+    const hashPassword = bcrypt.hashSync(new_password, saltRounds);
+    await query.update({
+      password: hashPassword,
+    });
+    res.status(200).send({
+      status: "success",
+      message: "Password berhasil diubah",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const { username, email } = req.body;
+    const query = db.collection("admin").doc(id);
+    const snapshot = await query.get();
+    if (!snapshot.exists) {
+      return res.status(400).send({
+        status: "error",
+        message: "Data tidak ditemukan",
+      });
+    }
+    await query.update({
+      username,
+      email,
+    });
+    res.status(200).send({
+      status: "success",
+      message: "Profile berhasil diubah",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};

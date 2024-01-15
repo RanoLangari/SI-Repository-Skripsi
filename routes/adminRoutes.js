@@ -6,6 +6,8 @@ import {
   getSkripsiProcess,
   KonfirmasiSkripsi,
   deleteSkripsi,
+  changePassword,
+  updateProfile,
 } from "../controller/adminController.js";
 import { isAuthorized } from "../utils/auth.js";
 import Express from "express";
@@ -19,4 +21,6 @@ Router.get("/getadmin", isAuthorized, getAdmin);
 Router.get("/get-skripsi-process", isAuthorized, getSkripsiProcess);
 Router.put("/konfirmasi-skripsi/:id", isAuthorized, KonfirmasiSkripsi);
 Router.put("/delete-skripsi/:id", isAuthorized, deleteSkripsi);
+Router.put("/change-password", isAuthorized, changePassword);
+Router.put("/profile", isAuthorized, updateProfile);
 export default Router;
