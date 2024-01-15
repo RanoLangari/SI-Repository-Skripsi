@@ -155,3 +155,26 @@ export const KonfirmasiSkripsi = async (req, res) => {
     console.log(error);
   }
 };
+
+export const deleteSkripsi = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const query = db.collection("mahasiswa").doc(id);
+    const snapshot = await query.get();
+    if (!snapshot.exists) {
+      return res.status(400).send({
+        status: "error",
+        message: "Data tidak ditemukan",
+      });
+    }
+    await query.update({
+      "skripsi.status": "Ditolak",
+    });
+    res.status(200).send({
+      status: "success",
+      message: "Status skripsi Ditolak",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
