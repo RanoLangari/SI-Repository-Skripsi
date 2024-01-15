@@ -397,7 +397,7 @@ export const getSkripsiByJurusan = async (req, res) => {
 export const changePassword = async (req, res) => {
   try {
     const { id } = req.user;
-    const { old_password, new_password, confirm_password } = req.body;
+    const { old_password, new_password } = req.body;
     const query = db.collection("mahasiswa").doc(id);
     const snapshot = await query.get();
     if (!snapshot.exists) {
