@@ -405,17 +405,11 @@ export const changePassword = async (req, res) => {
         message: "Data tidak ditemukan",
       });
     }
-
     const data = snapshot.data();
     const checkPassword = bcrypt.compareSync(old_password, data.password);
     if (!checkPassword) {
       return res.status(400).send({
         message: "Password salah",
-      });
-    }
-    if (new_password !== confirm_password) {
-      return res.status(400).send({
-        message: "Password tidak sama",
       });
     }
     const hashPassword = bcrypt.hashSync(new_password, saltRounds);
