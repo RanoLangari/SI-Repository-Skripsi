@@ -8,6 +8,7 @@ import {
   deleteSkripsi,
   changePassword,
   updateProfile,
+  getDosen,
 } from "../controller/adminController.js";
 import { isAuthorized } from "../utils/auth.js";
 import Express from "express";
@@ -23,4 +24,5 @@ Router.put("/konfirmasi-skripsi/:id", isAuthorized, KonfirmasiSkripsi);
 Router.put("/delete-skripsi/:id", isAuthorized, deleteSkripsi);
 Router.put("/change-password", isAuthorized, changePassword);
 Router.put("/profile", isAuthorized, updateProfile);
+Router.get("/get-dosen", isAuthorized, getDosen);
 export default Router;
