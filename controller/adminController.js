@@ -297,3 +297,28 @@ export const deleteDosen = async (req, res) => {
     console.log(error);
   }
 };
+
+export const editDosen = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { nama, jurusan } = req.body;
+    const query = db.collection("dosen").doc(id);
+    const snapshot = await query.get();
+    if (!snapshot.exists) {
+      return res.status(400).send({
+        status: "error",
+        message: "Dosen tidak ditemukan",
+      });
+    }
+    await query.update({
+      nama,
+      jurusan,
+    });
+    res.status(200).send({
+      status: "success",
+      message: "Dosen berhasil diupdate",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
