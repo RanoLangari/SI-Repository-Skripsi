@@ -10,6 +10,7 @@ import {
   updateProfile,
   getDosen,
   tambahDosen,
+  deleteDosen,
 } from "../controller/adminController.js";
 import { isAuthorized } from "../utils/auth.js";
 import Express from "express";
@@ -27,4 +28,5 @@ Router.put("/change-password", isAuthorized, changePassword);
 Router.put("/profile", isAuthorized, updateProfile);
 Router.get("/get-dosen", isAuthorized, getDosen);
 Router.post("/add-dosen", isAuthorized, tambahDosen);
+Router.delete("/delete-dosen/:id", isAuthorized, deleteDosen);
 export default Router;

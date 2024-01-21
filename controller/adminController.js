@@ -276,3 +276,24 @@ export const tambahDosen = async (req, res) => {
     console.log(error);
   }
 };
+
+export const deleteDosen = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const query = db.collection("dosen").doc(id);
+    const snapshot = await query.get();
+    if (!snapshot.exists) {
+      return res.status(400).send({
+        status: "error",
+        message: "Dosen tidak ditemukan",
+      });
+    }
+    await query.delete();
+    res.status(200).send({
+      status: "success",
+      message: "Dosen berhasil dihapus",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
