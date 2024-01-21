@@ -141,36 +141,12 @@ export const uploadSkripsi = async (req, res) => {
     const { id } = req.user;
     const { pembimbing1, pembimbing2, penguji, judul_skripsi, abstract } =
       req.body;
-    if (!file) {
-      return res.status(400).send({
-        message: "Mohon Masukan FIle",
-      });
-    }
-    if (file.mimetype !== "application/pdf")
-      return res.status(400).send({
-        message: "File harus berupa pdf",
-      });
-
-    if (
-      !pembimbing1 ||
-      !pembimbing2 ||
-      !penguji ||
-      !judul_skripsi ||
-      !abstract
-    ) {
-      return res.status(400).send({
-        message: "Data tidak lengkap",
-      });
-    }
     const checkSkripsi = await db.collection("mahasiswa").doc(id).get();
     if (checkSkripsi.data().skripsi) {
       return res.status(400).send({
-        message:
-          "Skripsi sudah diupload, untuk mengubah dan menghapus, buka halaman profile",
+        message: "Skripsi sudah diupload, Mohon tunggu konfirmasi dari admin",
       });
     }
-
-    // upload file to google cloud storage
     const bucket = storage.bucket(process.env.BUCKET_NAME);
     const blob = bucket.file(id + path.extname(file.name));
     const blobStream = blob.createWriteStream();
