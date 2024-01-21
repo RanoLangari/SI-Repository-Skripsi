@@ -1,6 +1,5 @@
 import Firestore from "@google-cloud/firestore";
 import dotenv from "dotenv";
-import path from "path";
 dotenv.config();
 
 const db = new Firestore({
