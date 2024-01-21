@@ -254,3 +254,25 @@ export const getDosen = async (req, res) => {
     console.log(error);
   }
 };
+
+export const tambahDosen = async (req, res) => {
+  try {
+    const { nama, jurusan } = req.body;
+    const query = db.collection("dosen");
+    const data = {
+      nama,
+      jurusan,
+    };
+    const result = await query.add(data);
+    res.status(200).send({
+      status: "success",
+      message: "Dosen berhasil ditambahkan",
+      data: {
+        id: result.id,
+        ...data,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};

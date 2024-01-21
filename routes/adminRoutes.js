@@ -9,6 +9,7 @@ import {
   changePassword,
   updateProfile,
   getDosen,
+  tambahDosen,
 } from "../controller/adminController.js";
 import { isAuthorized } from "../utils/auth.js";
 import Express from "express";
@@ -25,4 +26,5 @@ Router.put("/delete-skripsi/:id", isAuthorized, deleteSkripsi);
 Router.put("/change-password", isAuthorized, changePassword);
 Router.put("/profile", isAuthorized, updateProfile);
 Router.get("/get-dosen", isAuthorized, getDosen);
+Router.post("/add-dosen", isAuthorized, tambahDosen);
 export default Router;
