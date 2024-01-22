@@ -32,5 +32,5 @@ Router.get("/get-dosen", isAuthorized, getDosen);
 Router.post("/add-dosen", isAuthorized, tambahDosen);
 Router.delete("/delete-dosen/:id", isAuthorized, deleteDosen);
 Router.put("/edit-dosen/:id", isAuthorized, editDosen);
-Router.get("/get-dosen/:jurusan", isAuthorized, getDosenByJurusan);
+Router.get("/get-dosen-by-jurusan/:jurusan", isAuthorized, getDosenByJurusan);
 export default Router;

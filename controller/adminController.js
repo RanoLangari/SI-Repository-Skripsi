@@ -329,8 +329,7 @@ export const getDosenByJurusan = async (req, res) => {
     const query = db.collection("dosen");
     const snapshot = await query.where("jurusan", "==", jurusan).get();
     const result = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
+      nama: doc.data().nama,
     }));
     res.status(200).send({
       status: "success",
