@@ -10,6 +10,7 @@ import {
   checkLoginMahasiswa,
   getSkripsiStatus,
   changePassword,
+  getDosenByJurusan,
 } from "../controller/mahasiswaController.js";
 import { isAuthorized } from "../utils/auth.js";
 import Express from "express";
@@ -26,5 +27,6 @@ Router.put("/profile", isAuthorized, updateProfile);
 Router.get("/detail-skripsi/:id", isAuthorized, getSkripsiById);
 Router.get("/skripsi-status", isAuthorized, getSkripsiStatus);
 Router.put("/change-password", isAuthorized, changePassword);
+Router.post("/get-dosen-by-jurusan", isAuthorized, getDosenByJurusan);
 
 export default Router;

@@ -405,3 +405,21 @@ export const changePassword = async (req, res) => {
     console.log(error);
   }
 };
+
+export const getDosenByJurusan = async (req, res) => {
+  try {
+    const { jurusan } = req.body;
+    const query = db.collection("dosen");
+    const snapshot = await query.where("jurusan", "==", jurusan).get();
+    const result = snapshot.docs.map((doc) => ({
+      nama: doc.data().nama,
+    }));
+    res.status(200).send({
+      status: "success",
+      message: "Berhasil mendapatkan data dosen",
+      data: result,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};

@@ -12,7 +12,6 @@ import {
   tambahDosen,
   deleteDosen,
   editDosen,
-  getDosenByJurusan,
 } from "../controller/adminController.js";
 import { isAuthorized } from "../utils/auth.js";
 import Express from "express";
@@ -32,5 +31,4 @@ Router.get("/get-dosen", isAuthorized, getDosen);
 Router.post("/add-dosen", isAuthorized, tambahDosen);
 Router.delete("/delete-dosen/:id", isAuthorized, deleteDosen);
 Router.put("/edit-dosen/:id", isAuthorized, editDosen);
-Router.get("/get-dosen-by-jurusan/:jurusan", isAuthorized, getDosenByJurusan);
 export default Router;
