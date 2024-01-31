@@ -196,7 +196,10 @@ export const getHalfSkripsi = async (req, res) => {
         message: "Data tidak ditemukan",
       });
     }
-    const result = snapshot.docs.map((doc) => ({
+    const filterResult = snapshot.docs.filter(
+      (item) => item.data().skripsi.status === "Terverifikasi"
+    );
+    const result = filterResult.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
