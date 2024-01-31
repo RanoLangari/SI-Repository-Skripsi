@@ -341,8 +341,7 @@ export const updateProfile = async (req, res) => {
 
 export const getSkripsiByJurusan = async (req, res) => {
   try {
-    const { jurusan } = req.query;
-    console.log(jurusan);
+    const { jurusan } = req.params;
     const query = db.collection("mahasiswa");
     const snapshot = await query.where("jurusan", "==", jurusan).get();
     if (snapshot.empty) {
@@ -354,11 +353,12 @@ export const getSkripsiByJurusan = async (req, res) => {
       id: doc.id,
       ...doc.data(),
     }));
-    const mapData = result.map((item) => ({
+    const filterResult = result.filter((item) => item.skripsi);
+    const mapData = filterResult.map((item) => ({
       id: item.id,
       nama: item.nama,
       jurusan: item.jurusan,
-      judul_skripsi: item.judul_skripsi,
+      judul_skripsi: item.skripsi.judul_skripsi,
     }));
     return res.status(200).send({
       status: "success",
