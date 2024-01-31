@@ -11,6 +11,7 @@ import {
   getSkripsiStatus,
   changePassword,
   getDosenByJurusan,
+  getSkripsiByDate,
 } from "../controller/mahasiswaController.js";
 import { isAuthorized } from "../utils/auth.js";
 import Express from "express";
@@ -23,6 +24,7 @@ Router.get("/check-login", isAuthorized, checkLoginMahasiswa);
 Router.post("/upload-skripsi", isAuthorized, uploadSkripsi);
 Router.get("/get-skripsi", isAuthorized, getHalfSkripsi);
 Router.get("/get-skripsi/:jurusan", isAuthorized, getSkripsiByJurusan);
+Router.get("/get-skripsi-date", isAuthorized, getSkripsiByDate);
 Router.get("/profile", isAuthorized, getProfile);
 Router.put("/profile", isAuthorized, updateProfile);
 Router.get("/detail-skripsi/:id", isAuthorized, getSkripsiById);

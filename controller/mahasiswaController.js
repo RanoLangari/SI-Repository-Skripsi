@@ -373,6 +373,47 @@ export const getSkripsiByJurusan = async (req, res) => {
   }
 };
 
+export const getSkripsiByDate = async (req, res) => {
+  try {
+    const { tanggal_awal, tanggal_akhir } = req.query;
+    // convert tanggal_awal dan tanggal_akhir ke format timestamp
+    const timestamp_awal = new Date(tanggal_awal).getTime();
+    const timestamp_akhir = new Date(tanggal_akhir).getTime();
+    // convert timestamp ke format firestore
+    const convert_awal = new Date(timestamp_awal);
+    const convert_akhir = new Date(timestamp_akhir);
+    const query = db.collection("mahasiswa");
+    const snapshot = await query
+      .where("skripsi.tanggal_upload", ">=", convert_awal)
+      .where("skripsi.tanggal_upload", "<=", convert_akhir)
+      .get();
+
+    if (snapshot.empty) {
+      return res.status(400).send({
+        message: "Data tidak ditemukan",
+      });
+    }
+    const result = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    const filterResult = result.filter((item) => item.skripsi);
+    const mapData = filterResult.map((item) => ({
+      id: item.id,
+      nama: item.nama,
+      jurusan: item.jurusan,
+      judul_skripsi: item.skripsi.judul_skripsi,
+    }));
+    return res.status(200).send({
+      status: "success",
+      message: "Berhasil mendapatkan data skripsi",
+      data: mapData,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const changePassword = async (req, res) => {
   try {
     const { id } = req.user;
