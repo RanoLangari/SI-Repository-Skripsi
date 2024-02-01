@@ -13,34 +13,17 @@ const storage = new Storage({
 });
 
 export const registerMahasiswa = async (req, res) => {
-  console.log(req.body);
   try {
-    const {
-      nim,
-      nama,
-      jurusan,
-      semester,
-      status_kelulusan,
-      password,
-      confirm_password,
-    } = req.body;
-    if (
-      !nim ||
-      !nama ||
-      !jurusan ||
-      !semester ||
-      !status_kelulusan ||
-      !password ||
-      !confirm_password
-    ) {
-      return res.status(400).send({
-        message: "Data tidak lengkap",
-      });
-    }
+    const { nim, nama, jurusan, semester, status_kelulusan, password } =
+      req.body;
+    const cekNim = await db
+      .collection("mahasiswa")
+      .where("nim", "==", nim)
+      .get();
 
-    if (password !== confirm_password) {
+    if (!cekNim.empty) {
       return res.status(400).send({
-        message: "Password tidak sama",
+        message: "NIM sudah terdaftar",
       });
     }
     const hashPassword = bcrypt.hashSync(password, saltRounds);
