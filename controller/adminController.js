@@ -1,3 +1,4 @@
+import { FieldValue } from "@google-cloud/firestore";
 import db from "../utils/dbFirestore.js";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
@@ -168,7 +169,7 @@ export const deleteSkripsi = async (req, res) => {
       });
     }
     await query.update({
-      "skripsi.status": "Ditolak",
+      skripsi: FieldValue.delete(),
     });
     res.status(200).send({
       status: "success",
@@ -317,24 +318,6 @@ export const editDosen = async (req, res) => {
     res.status(200).send({
       status: "success",
       message: "Dosen berhasil diupdate",
-    });
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-export const getDosenByJurusan = async (req, res) => {
-  try {
-    const { jurusan } = req.params;
-    const query = db.collection("dosen");
-    const snapshot = await query.where("jurusan", "==", jurusan).get();
-    const result = snapshot.docs.map((doc) => ({
-      nama: doc.data().nama,
-    }));
-    res.status(200).send({
-      status: "success",
-      message: "Berhasil mendapatkan data dosen",
-      data: result,
     });
   } catch (error) {
     console.log(error);
