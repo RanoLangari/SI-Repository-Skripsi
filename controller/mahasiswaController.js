@@ -126,9 +126,16 @@ export const uploadSkripsi = async (req, res) => {
       req.body;
     const checkSkripsi = await db.collection("mahasiswa").doc(id).get();
     if (checkSkripsi.data().skripsi) {
-      return res.status(400).send({
-        message: "Skripsi sudah diupload, Mohon tunggu konfirmasi dari admin",
-      });
+      if (checkSkripsi.data().skripsi.status === "Terverifikasi") {
+        return res.status(400).send({
+          message: "Skripsi sudah diupload dan telah terverifikasi",
+        });
+      }
+      if (checkSkripsi.data().skripsi.status === "proses") {
+        return res.status(400).send({
+          message: "Skripsi sudah diupload, Mohon tunggu konfirmasi dari admin",
+        });
+      }
     }
     const bucket = storage.bucket(process.env.BUCKET_NAME);
     const blob = bucket.file(id + path.extname(file.name));
@@ -146,6 +153,7 @@ export const uploadSkripsi = async (req, res) => {
         penguji,
         judul_skripsi,
         abstract,
+        status: "proses",
       };
       const result = await query.update({
         skripsi: data,
