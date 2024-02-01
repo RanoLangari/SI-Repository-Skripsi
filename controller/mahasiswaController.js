@@ -220,7 +220,15 @@ export const getSkripsiStatus = async (req, res) => {
         message: "Data tidak ditemukan",
       });
     }
-    const item = snapshot.data();
+    let item = snapshot.data();
+    if (!item.skripsi) {
+      item = {
+        ...item,
+        skripsi: {
+          status: "Belum Upload",
+        },
+      };
+    }
     const mapData = {
       status_skripsi: item.skripsi.status,
       judul_skripsi: item.skripsi.judul_skripsi,
