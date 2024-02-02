@@ -53,7 +53,7 @@ export const registerMahasiswa = async (req, res) => {
       message: "Register berhasil",
     });
   } catch (error) {
-    console.log(error);
+    console.log("Error in registerMahasiswa:", error);
   }
 };
 
@@ -67,9 +67,9 @@ export const loginMahasiswa = async (req, res) => {
         message: "NIM tidak terdaftar",
       });
     }
-    const data = snapshot.docs[0].data();
-    const checkPassword = bcrypt.compareSync(password, data.password);
-    if (!checkPassword) {
+    const userData = snapshot.docs[0].data();
+    const isPasswordCorrect = await bcrypt.compare(password, userData.password);
+    if (!isPasswordCorrect) {
       return res.status(400).send({
         message: "Password salah",
       });
@@ -79,7 +79,6 @@ export const loginMahasiswa = async (req, res) => {
       process.env.SECRET_KEY,
       { expiresIn: "1d" }
     );
-    // set header authorization
     res.set("Authorization", `Bearer ${token}`);
     res.status(200).send({
       status: "success",
@@ -90,7 +89,7 @@ export const loginMahasiswa = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error in loginMahasiswa:", error);
   }
 };
 
@@ -109,7 +108,7 @@ export const checkLoginMahasiswa = async (req, res) => {
       message: "Data ditemukan",
     });
   } catch (error) {
-    console.log(error);
+    console.log("Error in checkLoginMahasiswa:", error);
   }
 };
 
@@ -173,7 +172,7 @@ export const uploadSkripsi = async (req, res) => {
     });
     blobStream.end(file.data);
   } catch (error) {
-    console.log(error);
+    console.log("Error in uploadSkripsi:", error);
   }
 };
 
@@ -205,7 +204,7 @@ export const getHalfSkripsi = async (req, res) => {
       data: mapData,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Error in getHalfSkripsi:", error);
   }
 };
 
@@ -243,7 +242,7 @@ export const getSkripsiStatus = async (req, res) => {
       data: mapData,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Error in getSkripsiStatus:", error);
   }
 };
 
@@ -275,7 +274,7 @@ export const getSkripsiById = async (req, res) => {
       data: mapData,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Error in getSkripsiById:", error);
   }
 };
 export const getProfile = async (req, res) => {
@@ -296,7 +295,7 @@ export const getProfile = async (req, res) => {
       data,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Error in getProfile:", error);
   }
 };
 
@@ -336,7 +335,7 @@ export const updateProfile = async (req, res) => {
       message: "Berhasil update profile",
     });
   } catch (error) {
-    console.log(error);
+    console.log("Error in updateProfile:", error);
   }
 };
 
@@ -367,7 +366,7 @@ export const getSkripsiByJurusan = async (req, res) => {
       data: mapData,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Error in getSkripsiByJurusan:", error);
   }
 };
 
@@ -408,7 +407,7 @@ export const getSkripsiByDate = async (req, res) => {
       data: mapData,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Error in getSkripsiByDate:", error);
   }
 };
 
@@ -444,7 +443,7 @@ export const changePassword = async (req, res) => {
       message: "Berhasil update password",
     });
   } catch (error) {
-    console.log(error);
+    console.log("Error in changePassword:", error);
   }
 };
 
@@ -462,6 +461,6 @@ export const getDosenByJurusan = async (req, res) => {
       data: result,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Error in getDosenByJurusan:", error);
   }
 };

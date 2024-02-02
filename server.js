@@ -10,10 +10,8 @@ const port = process.env.PORT || 5000;
 const app = Express();
 app.use(
   cors({
-    // allow all origin
     origin: "*",
     credentials: false,
-    // allow methods
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   })
 );
