@@ -179,7 +179,6 @@ export const uploadSkripsi = async (req, res) => {
 
 export const getHalfSkripsi = async (req, res) => {
   try {
-    const { id } = req.user;
     const query = db.collection("mahasiswa");
     const snapshot = await query.where("skripsi", "!=", null).get();
     if (snapshot.empty) {
