@@ -17,7 +17,7 @@ const storage = new Storage({
 
 export const registerMahasiswa = async (req, res) => {
   try {
-    const { nim, nama, jurusan, semester, status_kelulusan, password } =
+    const { nim, nama, email, jurusan, semester, status_kelulusan, password } =
       req.body;
     const cekNim = await db
       .collection("mahasiswa")
@@ -35,6 +35,7 @@ export const registerMahasiswa = async (req, res) => {
       nim,
       nama,
       jurusan,
+      email,
       semester,
       status_kelulusan,
       password: hashPassword,
@@ -580,7 +581,6 @@ export const verifyOtp = async (req, res) => {
 export const resetpassword = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(email, password);
     const query = db.collection("mahasiswa");
     const snapshot = await query.where("email", "==", email).get();
     if (snapshot.empty) {
