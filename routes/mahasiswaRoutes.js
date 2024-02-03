@@ -14,6 +14,7 @@ import {
   getSkripsiByDate,
   lupaPassword,
   verifyOtp,
+  resetpassword,
 } from "../controller/mahasiswaController.js";
 import { isAuthorized } from "../utils/auth.js";
 import Express from "express";
@@ -24,6 +25,7 @@ Router.post("/register", registerMahasiswa);
 Router.post("/login", loginMahasiswa);
 Router.post("/lupa-password", lupaPassword);
 Router.post("/verify-otp", verifyOtp);
+Router.post("/reset-password", resetpassword);
 Router.get("/check-login", isAuthorized, checkLoginMahasiswa);
 Router.post("/upload-skripsi", isAuthorized, uploadSkripsi);
 Router.get("/get-skripsi", isAuthorized, getHalfSkripsi);

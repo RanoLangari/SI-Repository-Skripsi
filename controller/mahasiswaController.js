@@ -6,6 +6,7 @@ import { Storage } from "@google-cloud/storage";
 import path from "path";
 import Mailgun from "mailgun.js";
 import FormData from "form-data";
+import { FieldValue } from "@google-cloud/firestore";
 dotenv.config();
 const saltRounds = 15;
 
@@ -554,7 +555,6 @@ export const lupaPassword = async (req, res) => {
 export const verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
-    console.log(email, otp);
     const query = db.collection("mahasiswa");
     const snapshot = await query.where("email", "==", email).get();
     if (snapshot.empty) {
@@ -574,5 +574,35 @@ export const verifyOtp = async (req, res) => {
     });
   } catch (error) {
     console.log("Error in verifyOtp:", error);
+  }
+};
+
+export const resetpassword = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    console.log(email, password);
+    const query = db.collection("mahasiswa");
+    const snapshot = await query.where("email", "==", email).get();
+    if (snapshot.empty) {
+      return res.status(400).send({
+        message: "Email atau Kode OTP tidak valid",
+      });
+    }
+    const hashPassword = bcrypt.hashSync(password, saltRounds);
+    const result = await snapshot.docs[0].ref.update({
+      password: hashPassword,
+      otp: FieldValue.delete(),
+    });
+    if (!result) {
+      return res.status(400).send({
+        message: "Gagal reset password",
+      });
+    }
+    return res.status(200).send({
+      status: "success",
+      message: "Berhasil reset password",
+    });
+  } catch (error) {
+    console.log("Error in resetpassword:", error);
   }
 };
