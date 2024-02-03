@@ -550,3 +550,29 @@ export const lupaPassword = async (req, res) => {
     console.log("Error in lupaPassword:", error);
   }
 };
+
+export const verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    console.log(email, otp);
+    const query = db.collection("mahasiswa");
+    const snapshot = await query.where("email", "==", email).get();
+    if (snapshot.empty) {
+      return res.status(400).send({
+        message: "Email tidak terdaftar",
+      });
+    }
+    const data = snapshot.docs[0].data();
+    if (data.otp != otp) {
+      return res.status(400).send({
+        message: "Kode OTP Tidak Valid",
+      });
+    }
+    return res.status(200).send({
+      status: "success",
+      message: "Kode OTP Valid",
+    });
+  } catch (error) {
+    console.log("Error in verifyOtp:", error);
+  }
+};

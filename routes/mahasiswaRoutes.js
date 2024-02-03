@@ -13,6 +13,7 @@ import {
   getDosenByJurusan,
   getSkripsiByDate,
   lupaPassword,
+  verifyOtp,
 } from "../controller/mahasiswaController.js";
 import { isAuthorized } from "../utils/auth.js";
 import Express from "express";
@@ -22,6 +23,7 @@ const Router = Express.Router();
 Router.post("/register", registerMahasiswa);
 Router.post("/login", loginMahasiswa);
 Router.post("/lupa-password", lupaPassword);
+Router.post("/verify-otp", verifyOtp);
 Router.get("/check-login", isAuthorized, checkLoginMahasiswa);
 Router.post("/upload-skripsi", isAuthorized, uploadSkripsi);
 Router.get("/get-skripsi", isAuthorized, getHalfSkripsi);
