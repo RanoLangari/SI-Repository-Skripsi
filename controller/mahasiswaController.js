@@ -79,7 +79,7 @@ export const loginMahasiswa = async (req, res) => {
     const token = jwt.sign(
       { id: snapshot.docs[0].id },
       process.env.SECRET_KEY,
-      { expiresIn: "1d" }
+      { expiresIn: "1d" },
     );
     res.set("Authorization", `Bearer ${token}`);
     res.status(200).send({
@@ -188,7 +188,7 @@ export const getHalfSkripsi = async (req, res) => {
       });
     }
     const filterResult = snapshot.docs.filter(
-      (item) => item.data().skripsi.status === "Terverifikasi"
+      (item) => item.data().skripsi.status === "Terverifikasi",
     );
     const result = filterResult.map((doc) => ({
       id: doc.id,
