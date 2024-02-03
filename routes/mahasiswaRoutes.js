@@ -12,6 +12,7 @@ import {
   changePassword,
   getDosenByJurusan,
   getSkripsiByDate,
+  lupaPassword,
 } from "../controller/mahasiswaController.js";
 import { isAuthorized } from "../utils/auth.js";
 import Express from "express";
@@ -20,6 +21,7 @@ const Router = Express.Router();
 
 Router.post("/register", registerMahasiswa);
 Router.post("/login", loginMahasiswa);
+Router.post("/lupa-password", lupaPassword);
 Router.get("/check-login", isAuthorized, checkLoginMahasiswa);
 Router.post("/upload-skripsi", isAuthorized, uploadSkripsi);
 Router.get("/get-skripsi", isAuthorized, getHalfSkripsi);
