@@ -4,6 +4,8 @@ import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 dotenv.config();
+import Mailgun from "mailgun.js";
+import FormData from "form-data";
 const saltRounds = 10;
 
 export const loginAdmin = async (req, res) => {
@@ -405,5 +407,30 @@ export const lupaPassword = async (req, res) => {
     });
   } catch (error) {
     console.log("Error in lupaPassword:", error);
+  }
+};
+
+export const verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const query = db.collection("admin");
+    const snapshot = await query.where("email", "==", email).get();
+    if (snapshot.empty) {
+      return res.status(400).send({
+        message: "Email tidak terdaftar",
+      });
+    }
+    const data = snapshot.docs[0].data();
+    if (data.otp != otp) {
+      return res.status(400).send({
+        message: "Kode OTP Tidak Valid",
+      });
+    }
+    return res.status(200).send({
+      status: "success",
+      message: "Kode OTP Valid",
+    });
+  } catch (error) {
+    console.log("Error in verifyOtp:", error);
   }
 };
