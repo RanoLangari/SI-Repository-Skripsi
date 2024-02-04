@@ -434,3 +434,32 @@ export const verifyOtp = async (req, res) => {
     console.log("Error in verifyOtp:", error);
   }
 };
+
+export const resetpassword = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const query = db.collection("admin");
+    const snapshot = await query.where("email", "==", email).get();
+    if (snapshot.empty) {
+      return res.status(400).send({
+        message: "Email tidak valid",
+      });
+    }
+    const hashPassword = bcrypt.hashSync(password, saltRounds);
+    const result = await snapshot.docs[0].ref.update({
+      password: hashPassword,
+      otp: FieldValue.delete(),
+    });
+    if (!result) {
+      return res.status(400).send({
+        message: "Gagal reset password",
+      });
+    }
+    return res.status(200).send({
+      status: "success",
+      message: "Berhasil reset password",
+    });
+  } catch (error) {
+    console.log("Error in resetpassword:", error);
+  }
+};

@@ -585,7 +585,7 @@ export const resetpassword = async (req, res) => {
     const snapshot = await query.where("email", "==", email).get();
     if (snapshot.empty) {
       return res.status(400).send({
-        message: "Email atau Kode OTP tidak valid",
+        message: "Email tidak valid",
       });
     }
     const hashPassword = bcrypt.hashSync(password, saltRounds);
