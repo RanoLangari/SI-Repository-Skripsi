@@ -323,3 +323,87 @@ export const editDosen = async (req, res) => {
     console.log(error);
   }
 };
+
+export const lupaPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const mailgun = new Mailgun(FormData);
+    const client = mailgun.client({
+      username: "api",
+      key: process.env.MAILGUN_API_KEY,
+    });
+    const DOMAIN =
+      process.env.MAILGUN_DOMAIN || "sandbox-yourkeyhere.mailgun.org";
+    const query = db.collection("admin");
+    const snapshot = await query.where("email", "==", email).get();
+    if (snapshot.empty) {
+      return res.status(400).send({
+        message: "Email Tidak terdaftar",
+      });
+    }
+    const RandomNumberOtp = Math.floor(1000 + Math.random() * 9000);
+    const messageData = {
+      from: "info@RepositoryFEBUndana",
+      to: email,
+      subject: "OTP Reset Password",
+      html: `<html>
+      <head>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+          }
+          .container {
+            width: 80%;
+            margin: 0 auto;
+          }
+          .header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+          }
+          .main {
+            padding: 20px;
+            text-align: center;
+          }
+          .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <img
+              src="https://feb.undana.ac.id/wp-content/uploads/2023/02/LOGO-FEB-black.png"
+              width="400"
+              alt="FEB UNDANA"
+            />
+            <h1>Sistem Informasi Repository Skripsi FEB UNDANA</h1>
+            <div style="margin-top: 70px">
+              <p>Kode OTP untuk reset password anda adalah:</p>
+              <h2>${RandomNumberOtp}</h2>
+              <p>Gunakan kode OTP diatas untuk mereset password anda.</p>
+            </div>
+          </div>
+          <div class="footer">
+            <p>© 2024 Sistem Informasi Repository Skripsi FEB UNDANA</p>
+          </div>
+        </div>
+      </body>
+    </html>
+    `,
+    };
+    client.messages.create(DOMAIN, messageData);
+    db.collection("admin").doc(snapshot.docs[0].id).update({
+      otp: RandomNumberOtp,
+    });
+    res.status(200).send({
+      status: "success",
+      message: "Berhasil mengirim kode OTP",
+    });
+  } catch (error) {
+    console.log("Error in lupaPassword:", error);
+  }
+};
