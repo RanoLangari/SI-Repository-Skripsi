@@ -36,7 +36,7 @@ export const loginAdmin = async (req, res) => {
     const token = jwt.sign(
       { id: snapshot.docs[0].id },
       process.env.SECRET_KEY,
-      { expiresIn: "1d" }
+      { expiresIn: "1d" },
     );
     res.status(200).send({
       status: "success",
