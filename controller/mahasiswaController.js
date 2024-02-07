@@ -2,18 +2,13 @@ import db from "../utils/dbFirestore.js";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import { Storage } from "@google-cloud/storage";
+import storage from "../utils/storege.js";
 import path from "path";
 import Mailgun from "mailgun.js";
 import FormData from "form-data";
 import { FieldValue } from "@google-cloud/firestore";
 dotenv.config();
 const saltRounds = 15;
-
-const storage = new Storage({
-  projectId: process.env.PROJECT_ID,
-  keyFilename: process.env.BUCKET_KEY,
-});
 
 export const registerMahasiswa = async (req, res) => {
   try {

@@ -1,5 +1,5 @@
 import { FieldValue } from "@google-cloud/firestore";
-import { Storage } from "@google-cloud/storage";
+import storage from "../utils/storege.js";
 import db from "../utils/dbFirestore.js";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
@@ -8,11 +8,6 @@ dotenv.config();
 import Mailgun from "mailgun.js";
 import FormData from "form-data";
 const saltRounds = 10;
-
-const storage = new Storage({
-  projectId: process.env.PROJECT_ID,
-  keyFilename: process.env.BUCKET_KEY,
-});
 
 export const loginAdmin = async (req, res) => {
   try {
