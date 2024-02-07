@@ -463,3 +463,34 @@ export const resetpassword = async (req, res) => {
     console.log("Error in resetpassword:", error);
   }
 };
+
+export const getMahasiswaSkripsiVerified = async (req, res) => {
+  try {
+    const query = db.collection("mahasiswa");
+    const snapshot = await query
+      .where("skripsi.status", "==", "Terverifikasi")
+      .get();
+    const result = snapshot.docs.map((doc) => ({
+      ...doc.data(),
+    }));
+    const mapResult = result.map((item) => {
+      return {
+        nama: item.nama,
+        nim: item.nim,
+        jurusan: item.jurusan,
+        semester: item.semester,
+        judul_skripsi: item.skripsi.judul_skripsi,
+        pembimbing1: item.skripsi.pembimbing1,
+        pembimbing2: item.skripsi.pembimbing2,
+        penguji: item.skripsi.penguji,
+      };
+    });
+    res.status(200).send({
+      status: "success",
+      message: "Berhasil mendapatkan data mahasiswa",
+      data: mapResult,
+    });
+  } catch (error) {
+    console.log("Error in getMahasiswaSkripsiVerified:", error);
+  }
+};
