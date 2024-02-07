@@ -302,7 +302,7 @@ export const getProfile = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const { id } = req.user;
-    const { nim, nama, jurusan, semester, status_kelulusan } = req.body;
+    const { nim, nama, jurusan, semester, status_kelulusan, email } = req.body;
     const query = db.collection("mahasiswa").doc(id);
     const snapshot = await query.get();
     if (!snapshot.exists) {
@@ -317,6 +317,7 @@ export const updateProfile = async (req, res) => {
       jurusan: data.jurusan,
       semester: data.semester,
       status_kelulusan: data.status_kelulusan,
+      email: data.email,
     };
     const result = await query.update({
       nim: nim || mapingData.nim,
@@ -324,6 +325,7 @@ export const updateProfile = async (req, res) => {
       jurusan: jurusan || mapingData.jurusan,
       semester: semester || mapingData.semester,
       status_kelulusan: status_kelulusan || mapingData.status_kelulusan,
+      email: email || mapingData.email,
     });
     if (!result) {
       return res.status(400).send({
