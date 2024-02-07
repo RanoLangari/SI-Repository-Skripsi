@@ -4,10 +4,17 @@ import db from "../utils/dbFirestore.js";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-dotenv.config();
 import Mailgun from "mailgun.js";
 import FormData from "form-data";
+dotenv.config();
+
 const saltRounds = 10;
+const mailgun = new Mailgun(FormData);
+const client = mailgun.client({
+  username: "api",
+  key: process.env.MAILGUN_API_KEY,
+});
+const DOMAIN = process.env.MAILGUN_DOMAIN || "";
 
 export const loginAdmin = async (req, res) => {
   try {
@@ -148,6 +155,59 @@ export const KonfirmasiSkripsi = async (req, res) => {
         message: "Data tidak ditemukan",
       });
     }
+    const data = snapshot.data();
+    const messageData = {
+      from: "info@RepositoryFEBUndana",
+      to: data.email,
+      subject: "Status Skripsi",
+      html: `<html>
+      <head>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+          }
+          .container {
+            width: 80%;
+            margin: 0 auto;
+          }
+          .header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+          }
+          .main {
+            padding: 20px;
+            text-align: center;
+          }
+          .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <img
+              src="https://feb.undana.ac.id/wp-content/uploads/2023/02/LOGO-FEB-black.png"
+              width="400"
+              alt="FEB UNDANA"
+            />
+            <h1>Sistem Informasi Repository Skripsi FEB UNDANA</h1>
+            <div style="margin-top: 70px">
+              <p>Skripsi Anda Telah Terverifikasi</p> 
+            </div>
+          </div>
+          <div class="footer">
+            <p>© 2024 Sistem Informasi Repository Skripsi FEB UNDANA</p>
+          </div>
+        </div>
+      </body>
+    </html>
+    `,
+    };
+    client.messages.create(DOMAIN, messageData);
     await query.update({
       "skripsi.status": "Terverifikasi",
     });
@@ -162,12 +222,6 @@ export const KonfirmasiSkripsi = async (req, res) => {
 
 export const deleteSkripsi = async (req, res) => {
   try {
-    const mailgun = new Mailgun(FormData);
-    const client = mailgun.client({
-      username: "api",
-      key: process.env.MAILGUN_API_KEY,
-    });
-    const DOMAIN = process.env.MAILGUN_DOMAIN || "";
     const { id } = req.params;
     const query = db.collection("mahasiswa").doc(id);
     const snapshot = await query.get();
