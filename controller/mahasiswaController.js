@@ -156,6 +156,7 @@ export const uploadSkripsi = async (req, res) => {
         penguji,
         judul_skripsi,
         abstract,
+        tanggal_upload: FieldValue.serverTimestamp(),
         status: "proses",
       };
       const result = await query.update({
