@@ -1,4 +1,5 @@
 import { FieldValue } from "@google-cloud/firestore";
+import { Storage } from "@google-cloud/storage";
 import db from "../utils/dbFirestore.js";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
@@ -7,6 +8,11 @@ dotenv.config();
 import Mailgun from "mailgun.js";
 import FormData from "form-data";
 const saltRounds = 10;
+
+const storage = new Storage({
+  projectId: process.env.PROJECT_ID,
+  keyFilename: process.env.BUCKET_KEY,
+});
 
 export const loginAdmin = async (req, res) => {
   try {
@@ -170,9 +176,13 @@ export const deleteSkripsi = async (req, res) => {
         message: "Data tidak ditemukan",
       });
     }
+    const bucket = storage.bucket(process.env.BUCKET_NAME);
+    const file = bucket.file(`${id}.pdf`);
+    await file.delete();
     await query.update({
       skripsi: FieldValue.delete(),
     });
+
     res.status(200).send({
       status: "success",
       message: "Status skripsi Ditolak",
