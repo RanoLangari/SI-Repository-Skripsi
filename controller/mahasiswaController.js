@@ -486,7 +486,7 @@ export const lupaPassword = async (req, res) => {
     }
     const RandomNumberOtp = Math.floor(1000 + Math.random() * 9000);
     const messageData = {
-      from: "info@RepositoryFEBUndana",
+      from: process.env.MAIL_ADDRESSS,
       to: email,
       subject: "OTP Reset Password",
       html: `<html>
