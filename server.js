@@ -19,6 +19,7 @@ app.use(
 app.use(Express.json());
 app.use(Express.urlencoded({ extended: true }));
 app.use(fileUpload());
+app.use(Express.static("public"));
 app.use("/api/admin", adminRoutes);
 app.use("/api/mahasiswa", MahasiswaRoutes);
 app.use("*", (req, res) =>

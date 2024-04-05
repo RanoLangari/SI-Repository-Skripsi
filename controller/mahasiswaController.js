@@ -7,6 +7,8 @@ import path from "path";
 import Mailgun from "mailgun.js";
 import FormData from "form-data";
 import { FieldValue } from "@google-cloud/firestore";
+import { degrees, PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import fs from "fs";
 dotenv.config();
 const saltRounds = 15;
 
@@ -135,6 +137,29 @@ export const uploadSkripsi = async (req, res) => {
         });
       }
     }
+
+    // watermark pdf using random image from public folder
+    const pdfDoc = await PDFDocument.load(file.data);
+    const image = await pdfDoc.embedPng(
+      await fs.promises.readFile(
+        path.join(process.cwd(), "public", "Logo_Undana.png")
+      )
+    );
+    const pages = pdfDoc.getPages();
+    for (const page of pages) {
+      const { width, height } = page.getSize();
+      page.drawImage(image, {
+        y: height / 2 - height / 4,
+        x: width / 2 - width / 4,
+        width: width / 2,
+        height: height / 2,
+        opacity: 0.15,
+      });
+    }
+
+    const pdfBytes = await pdfDoc.save();
+    const buffer = Buffer.from(pdfBytes);
+    file.data = buffer;
     const bucket = storage.bucket(process.env.BUCKET_NAME);
     const blob = bucket.file(id + path.extname(file.name));
     const blobStream = blob.createWriteStream();
