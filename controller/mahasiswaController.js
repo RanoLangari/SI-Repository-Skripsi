@@ -7,7 +7,7 @@ import path from "path";
 import Mailgun from "mailgun.js";
 import FormData from "form-data";
 import { FieldValue } from "@google-cloud/firestore";
-import { degrees, PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument } from "pdf-lib";
 import fs from "fs";
 dotenv.config();
 const saltRounds = 15;
@@ -137,8 +137,6 @@ export const uploadSkripsi = async (req, res) => {
         });
       }
     }
-
-    // watermark pdf using random image from public folder
     const pdfDoc = await PDFDocument.load(file.data);
     const image = await pdfDoc.embedPng(
       await fs.promises.readFile(
@@ -153,7 +151,7 @@ export const uploadSkripsi = async (req, res) => {
         x: width / 2 - width / 4,
         width: width / 2,
         height: height / 2,
-        opacity: 0.15,
+        opacity: 0.1,
       });
     }
 
