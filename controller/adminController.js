@@ -8,7 +8,7 @@ import Mailgun from "mailgun.js";
 import FormData from "form-data";
 dotenv.config();
 
-const saltRounds = 10;
+const saltRounds = 8;
 const mailgun = new Mailgun(FormData);
 const client = mailgun.client({
   username: "api",

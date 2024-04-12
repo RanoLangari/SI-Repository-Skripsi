@@ -10,7 +10,7 @@ import { FieldValue } from "@google-cloud/firestore";
 import { PDFDocument } from "pdf-lib";
 import fs from "fs";
 dotenv.config();
-const saltRounds = 15;
+const saltRounds = 8;
 
 export const registerMahasiswa = async (req, res) => {
   try {
