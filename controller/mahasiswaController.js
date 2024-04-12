@@ -80,7 +80,7 @@ export const loginMahasiswa = async (req, res) => {
       process.env.SECRET_KEY,
       { expiresIn: "1d" }
     );
-    res.set("Authorization", `Bearer ${token}`);
+    // res.set("Authorization", `Bearer ${token}`);
     res.status(200).send({
       status: "success",
       message: "Login berhasil",
