@@ -85,7 +85,7 @@ export const loginMahasiswa = async (req, res) => {
       status: "success",
       message: "Login berhasil",
       data: {
-        id: snapshot.docs[0].id,
+        // id: snapshot.docs[0].id,
         token,
       },
     });
