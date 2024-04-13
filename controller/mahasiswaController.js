@@ -28,12 +28,15 @@ export const registerMahasiswa = async (req, res) => {
         message: "NIM sudah terdaftar",
       });
     }
-    const cekEmail = await db.collection("mahasiswa").where("email", "==", email).get();
+    const cekEmail = await db
+      .collection("mahasiswa")
+      .where("email", "==", email)
+      .get();
     if (!cekEmail.empty) {
       return res.status(400).send({
         message: "Email sudah terdaftar",
       });
-    } 
+    }
     const hashPassword = bcrypt.hashSync(password, saltRounds);
     const query = db.collection("mahasiswa");
     const data = {
@@ -86,7 +89,7 @@ export const loginMahasiswa = async (req, res) => {
     const token = jwt.sign(
       { id: snapshot.docs[0].id },
       process.env.SECRET_KEY,
-      { expiresIn: "1d" }
+      { expiresIn: "1d" },
     );
     res.status(200).send({
       status: "success",
@@ -127,8 +130,8 @@ export const uploadSkripsi = async (req, res) => {
     const pdfDoc = await PDFDocument.load(file.data);
     const image = await pdfDoc.embedPng(
       await fs.promises.readFile(
-        path.join(process.cwd(), "public", "Logo_Undana.png")
-      )
+        path.join(process.cwd(), "public", "Logo_Undana.png"),
+      ),
     );
     const pages = pdfDoc.getPages();
     for (const page of pages) {
@@ -196,7 +199,7 @@ export const getHalfSkripsi = async (req, res) => {
       });
     }
     const filterResult = snapshot.docs.filter(
-      (item) => item.data().skripsi.status === "Terverifikasi"
+      (item) => item.data().skripsi.status === "Terverifikasi",
     );
     const result = filterResult.map((doc) => ({
       id: doc.id,
@@ -320,13 +323,19 @@ export const updateProfile = async (req, res) => {
         message: "Data tidak ditemukan",
       });
     }
-    const cekNim = await db.collection("mahasiswa").where("nim", "==", nim).get();
+    const cekNim = await db
+      .collection("mahasiswa")
+      .where("nim", "==", nim)
+      .get();
     if (!cekNim.empty) {
       return res.status(400).send({
         message: "NIM sudah terdaftar",
       });
     }
-    const cekEmail = await db.collection("mahasiswa").where("email", "==", email).get();
+    const cekEmail = await db
+      .collection("mahasiswa")
+      .where("email", "==", email)
+      .get();
     if (!cekEmail.empty) {
       return res.status(400).send({
         message: "Email sudah terdaftar",

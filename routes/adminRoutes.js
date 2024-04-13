@@ -31,7 +31,7 @@ Router.get("/get-skripsi-process", isAuthorized, getSkripsiProcess);
 Router.get(
   "/get-mahasiswa-skripsi-verified",
   isAuthorized,
-  getMahasiswaSkripsiVerified
+  getMahasiswaSkripsiVerified,
 );
 Router.put("/konfirmasi-skripsi/:id", isAuthorized, KonfirmasiSkripsi);
 Router.put("/delete-skripsi/:id", isAuthorized, deleteSkripsi);
