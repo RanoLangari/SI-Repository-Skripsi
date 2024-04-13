@@ -4,17 +4,11 @@ import db from "../utils/dbFirestore.js";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import Mailgun from "mailgun.js";
-import FormData from "form-data";
+import EmailService from "../utils/emailService.js";
 dotenv.config();
 
 const saltRounds = 8;
-const mailgun = new Mailgun(FormData);
-const client = mailgun.client({
-  username: "api",
-  key: process.env.MAILGUN_API_KEY,
-});
-const DOMAIN = process.env.MAILGUN_DOMAIN || "";
+const emailService = new EmailService();
 
 export const loginAdmin = async (req, res) => {
   try {
@@ -156,58 +150,7 @@ export const KonfirmasiSkripsi = async (req, res) => {
       });
     }
     const data = snapshot.data();
-    const messageData = {
-      from: process.env.MAIL_ADDRESSS,
-      to: data.email,
-      subject: "Status Skripsi",
-      html: `<html>
-      <head>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-          }
-          .container {
-            width: 80%;
-            margin: 0 auto;
-          }
-          .header {
-            background-color: #f8f9fa;
-            padding: 20px;
-            text-align: center;
-          }
-          .main {
-            padding: 20px;
-            text-align: center;
-          }
-          .footer {
-            background-color: #f8f9fa;
-            padding: 20px;
-            text-align: center;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <img
-              src="https://feb.undana.ac.id/wp-content/uploads/2023/02/LOGO-FEB-black.png"
-              width="400"
-              alt="FEB UNDANA"
-            />
-            <h1>Sistem Informasi Repository Skripsi FEB UNDANA</h1>
-            <div style="margin-top: 70px">
-              <p>Skripsi Anda Telah Terverifikasi</p> 
-            </div>
-          </div>
-          <div class="footer">
-            <p>© 2024 Sistem Informasi Repository Skripsi FEB UNDANA</p>
-          </div>
-        </div>
-      </body>
-    </html>
-    `,
-    };
-    client.messages.create(DOMAIN, messageData);
+    emailService.sendEmailSkripsiVerified(data.email);
     await query.update({
       "skripsi.status": "Terverifikasi",
     });
@@ -238,59 +181,7 @@ export const deleteSkripsi = async (req, res) => {
       skripsi: FieldValue.delete(),
     });
     const data = snapshot.data();
-    const messageData = {
-      from: process.env.MAIL_ADDRESSS,
-      to: data.email,
-      subject: "Status Skripsi",
-      html: `<html>
-      <head>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-          }
-          .container {
-            width: 80%;
-            margin: 0 auto;
-          }
-          .header {
-            background-color: #f8f9fa;
-            padding: 20px;
-            text-align: center;
-          }
-          .main {
-            padding: 20px;
-            text-align: center;
-          }
-          .footer {
-            background-color: #f8f9fa;
-            padding: 20px;
-            text-align: center;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <img
-              src="https://feb.undana.ac.id/wp-content/uploads/2023/02/LOGO-FEB-black.png"
-              width="400"
-              alt="FEB UNDANA"
-            />
-            <h1>Sistem Informasi Repository Skripsi FEB UNDANA</h1>
-            <div style="margin-top: 70px">
-              <p>Skripsi Anda Telah Dtolak</p> 
-              <p>Silahkan upload kembali skripsi anda</p>
-            </div>
-          </div>
-          <div class="footer">
-            <p>© 2024 Sistem Informasi Repository Skripsi FEB UNDANA</p>
-          </div>
-        </div>
-      </body>
-    </html>
-    `,
-    };
-    client.messages.create(DOMAIN, messageData);
+    emailService.sendEmailSkripsiReject(data.email);
     res.status(200).send({
       status: "success",
       message: "Status skripsi Ditolak",
@@ -447,12 +338,6 @@ export const editDosen = async (req, res) => {
 export const lupaPassword = async (req, res) => {
   try {
     const { email } = req.body;
-    const mailgun = new Mailgun(FormData);
-    const client = mailgun.client({
-      username: "api",
-      key: process.env.MAILGUN_API_KEY,
-    });
-    const DOMAIN = process.env.MAILGUN_DOMAIN || "";
     const query = db.collection("admin");
     const snapshot = await query.where("email", "==", email).get();
     if (snapshot.empty) {
@@ -461,60 +346,7 @@ export const lupaPassword = async (req, res) => {
       });
     }
     const RandomNumberOtp = Math.floor(1000 + Math.random() * 9000);
-    const messageData = {
-      from: process.env.MAIL_ADDRESSS,
-      to: email,
-      subject: "OTP Reset Password",
-      html: `<html> 
-      <head>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-          }
-          .container {
-            width: 80%;
-            margin: 0 auto;
-          }
-          .header {
-            background-color: #f8f9fa;
-            padding: 20px;
-            text-align: center;
-          }
-          .main {
-            padding: 20px;
-            text-align: center;
-          }
-          .footer {
-            background-color: #f8f9fa;
-            padding: 20px;
-            text-align: center;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <img
-              src="https://feb.undana.ac.id/wp-content/uploads/2023/02/LOGO-FEB-black.png"
-              width="400"
-              alt="FEB UNDANA"
-            />
-            <h1>Sistem Informasi Repository Skripsi FEB UNDANA</h1>
-            <div style="margin-top: 70px">
-              <p>Kode OTP untuk reset password anda adalah:</p>
-              <h2>${RandomNumberOtp}</h2>
-              <p>Gunakan kode OTP diatas untuk mereset password anda.</p>
-            </div>
-          </div>
-          <div class="footer">
-            <p>© 2024 Sistem Informasi Repository Skripsi FEB UNDANA</p>
-          </div>
-        </div>
-      </body>
-    </html>
-    `,
-    };
-    client.messages.create(DOMAIN, messageData);
+    emailService.sendOtpResetPasswordEmail(email, RandomNumberOtp);
     db.collection("admin").doc(snapshot.docs[0].id).update({
       otp: RandomNumberOtp,
     });

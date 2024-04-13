@@ -4,11 +4,13 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import storage from "../utils/storege.js";
 import path from "path";
-import Mailgun from "mailgun.js";
-import FormData from "form-data";
 import { FieldValue } from "@google-cloud/firestore";
 import { PDFDocument } from "pdf-lib";
 import fs from "fs";
+import EmailService from "../utils/emailService.js";
+
+const emailService = new EmailService();
+
 dotenv.config();
 const saltRounds = 8;
 
@@ -80,12 +82,10 @@ export const loginMahasiswa = async (req, res) => {
       process.env.SECRET_KEY,
       { expiresIn: "1d" }
     );
-    // res.set("Authorization", `Bearer ${token}`);
     res.status(200).send({
       status: "success",
       message: "Login berhasil",
       data: {
-        // id: snapshot.docs[0].id,
         token,
       },
     });
@@ -493,13 +493,6 @@ export const getDosenByJurusan = async (req, res) => {
 export const lupaPassword = async (req, res) => {
   try {
     const { email } = req.body;
-    const mailgun = new Mailgun(FormData);
-    const client = mailgun.client({
-      username: "api",
-      key: process.env.MAILGUN_API_KEY,
-    });
-    const DOMAIN =
-      process.env.MAILGUN_DOMAIN || "sandbox-yourkeyhere.mailgun.org";
     const query = db.collection("mahasiswa");
     const snapshot = await query.where("email", "==", email).get();
     if (snapshot.empty) {
@@ -508,60 +501,7 @@ export const lupaPassword = async (req, res) => {
       });
     }
     const RandomNumberOtp = Math.floor(1000 + Math.random() * 9000);
-    const messageData = {
-      from: process.env.MAIL_ADDRESSS,
-      to: email,
-      subject: "OTP Reset Password",
-      html: `<html>
-      <head>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-          }
-          .container {
-            width: 80%;
-            margin: 0 auto;
-          }
-          .header {
-            background-color: #f8f9fa;
-            padding: 20px;
-            text-align: center;
-          }
-          .main {
-            padding: 20px;
-            text-align: center;
-          }
-          .footer {
-            background-color: #f8f9fa;
-            padding: 20px;
-            text-align: center;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <img
-              src="https://feb.undana.ac.id/wp-content/uploads/2023/02/LOGO-FEB-black.png"
-              width="400"
-              alt="FEB UNDANA"
-            />
-            <h1>Sistem Informasi Repository Skripsi FEB UNDANA</h1>
-            <div style="margin-top: 70px">
-              <p>Kode OTP untuk reset password anda adalah:</p>
-              <h2>${RandomNumberOtp}</h2>
-              <p>Gunakan kode OTP diatas untuk mereset password anda.</p>
-            </div>
-          </div>
-          <div class="footer">
-            <p>© 2024 Sistem Informasi Repository Skripsi FEB UNDANA</p>
-          </div>
-        </div>
-      </body>
-    </html>
-    `,
-    };
-    client.messages.create(DOMAIN, messageData);
+    emailService.sendOtpResetPasswordEmail(email, RandomNumberOtp);
     db.collection("mahasiswa").doc(snapshot.docs[0].id).update({
       otp: RandomNumberOtp,
     });
