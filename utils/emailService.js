@@ -1,5 +1,5 @@
 import Mailgun from "mailgun.js";
-import FormData from "form-data";   
+import FormData from "form-data";
 
 class EmailService {
   constructor() {
@@ -74,7 +74,7 @@ class EmailService {
     await this.sendEmail(email, "OTP Reset Password", html);
   }
 
-  async sendEmailSkripsiVerified(email){
+  async sendEmailSkripsiVerified(email) {
     const html = `<html>
     <head>
       <style>
@@ -124,7 +124,7 @@ class EmailService {
     await this.sendEmail(email, "Status Skripsi", html);
   }
 
-  async sendEmailSkripsiReject(email){
+  async sendEmailSkripsiReject(email) {
     const html = `<html>
     <head>
       <style>
@@ -176,8 +176,4 @@ class EmailService {
   }
 }
 
-
 export default EmailService;
-
-
-
