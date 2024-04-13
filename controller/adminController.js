@@ -26,7 +26,7 @@ export const loginAdmin = async (req, res) => {
     const token = jwt.sign(
       { id: snapshot.docs[0].id },
       process.env.SECRET_KEY,
-      { expiresIn: "1d" }
+      { expiresIn: "1d" },
     );
     res.status(200).send({
       status: "success",
@@ -92,7 +92,7 @@ export const getSkripsiProcess = async (req, res) => {
       res,
       200,
       "Berhasil mendapatkan data mahasiswa",
-      result
+      result,
     );
   } catch (error) {
     console.log("Error in getSkripsiProcess: ", error);
@@ -316,7 +316,7 @@ export const getMahasiswaSkripsiVerified = async (req, res) => {
       res,
       200,
       "Berhasil mendapatkan data mahasiswa",
-      mapResult
+      mapResult,
     );
   } catch (error) {
     console.log("Error in getMahasiswaSkripsiVerified:", error);
