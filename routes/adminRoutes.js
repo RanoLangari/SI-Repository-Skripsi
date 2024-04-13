@@ -2,7 +2,6 @@ import {
   createAdmin,
   loginAdmin,
   getAdmin,
-  checkLoginAdmin,
   getSkripsiProcess,
   KonfirmasiSkripsi,
   deleteSkripsi,
@@ -23,7 +22,6 @@ import Express from "express";
 const Router = Express.Router();
 
 Router.post("/login", loginAdmin);
-Router.get("/check-login", isAuthorized, checkLoginAdmin);
 Router.post("/lupa-password", lupaPassword);
 Router.post("/verify-otp", verifyOtp);
 Router.post("/reset-password", resetpassword);

@@ -28,6 +28,12 @@ export const registerMahasiswa = async (req, res) => {
         message: "NIM sudah terdaftar",
       });
     }
+    const cekEmail = await db.collection("mahasiswa").where("email", "==", email).get();
+    if (!cekEmail.empty) {
+      return res.status(400).send({
+        message: "Email sudah terdaftar",
+      });
+    } 
     const hashPassword = bcrypt.hashSync(password, saltRounds);
     const query = db.collection("mahasiswa");
     const data = {
@@ -91,25 +97,6 @@ export const loginMahasiswa = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in loginMahasiswa:", error);
-  }
-};
-
-export const checkLoginMahasiswa = async (req, res) => {
-  try {
-    const { id } = req.user;
-    const query = db.collection("mahasiswa").doc(id);
-    const snapshot = await query.get();
-    if (!snapshot.exists) {
-      return res.status(400).send({
-        message: "Data tidak ditemukan",
-      });
-    }
-    return res.status(200).send({
-      status: "success",
-      message: "Data ditemukan",
-    });
-  } catch (error) {
-    console.log("Error in checkLoginMahasiswa:", error);
   }
 };
 
@@ -331,6 +318,18 @@ export const updateProfile = async (req, res) => {
     if (!snapshot.exists) {
       return res.status(400).send({
         message: "Data tidak ditemukan",
+      });
+    }
+    const cekNim = await db.collection("mahasiswa").where("nim", "==", nim).get();
+    if (!cekNim.empty) {
+      return res.status(400).send({
+        message: "NIM sudah terdaftar",
+      });
+    }
+    const cekEmail = await db.collection("mahasiswa").where("email", "==", email).get();
+    if (!cekEmail.empty) {
+      return res.status(400).send({
+        message: "Email sudah terdaftar",
       });
     }
     const data = snapshot.data();

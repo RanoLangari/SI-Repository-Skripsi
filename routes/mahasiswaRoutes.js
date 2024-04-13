@@ -7,7 +7,6 @@ import {
   getProfile,
   updateProfile,
   getSkripsiByJurusan,
-  checkLoginMahasiswa,
   getSkripsiStatus,
   changePassword,
   getDosenByJurusan,
@@ -26,7 +25,6 @@ Router.post("/login", loginMahasiswa);
 Router.post("/lupa-password", lupaPassword);
 Router.post("/verify-otp", verifyOtp);
 Router.post("/reset-password", resetpassword);
-Router.get("/check-login", isAuthorized, checkLoginMahasiswa);
 Router.post("/upload-skripsi", isAuthorized, uploadSkripsi);
 Router.get("/get-skripsi", isAuthorized, getHalfSkripsi);
 Router.get("/get-skripsi/:jurusan", isAuthorized, getSkripsiByJurusan);
