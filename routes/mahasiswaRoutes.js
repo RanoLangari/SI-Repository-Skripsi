@@ -27,7 +27,7 @@ Router.post("/verify-otp", verifyOtp);
 Router.post("/reset-password", resetpassword);
 Router.post("/upload-skripsi", isAuthorized, uploadSkripsi);
 Router.get("/get-skripsi", isAuthorized, getHalfSkripsi);
-Router.get("/get-skripsi/:jurusan", isAuthorized, getSkripsiByJurusan);
+Router.post("/get-skripsi-jurusan", isAuthorized, getSkripsiByJurusan);
 Router.get("/get-skripsi-date", isAuthorized, getSkripsiByDate);
 Router.get("/profile", isAuthorized, getProfile);
 Router.put("/profile", isAuthorized, updateProfile);

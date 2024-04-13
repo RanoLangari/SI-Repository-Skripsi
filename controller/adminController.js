@@ -51,14 +51,15 @@ export const createAdmin = async (req, res) => {
       password: hashPassword,
     };
     const snapshot = await query.where("email", "==", email).get();
-    if (!snapshot.empty) return helper.responseError(res, 400, "Email sudah terdaftar");
+    if (!snapshot.empty)
+      return helper.responseError(res, 400, "Email sudah terdaftar");
     const result = await query.add(data);
     return helper.response(res, 200, "Admin berhasil ditambahkan", {
       id: result.id,
       ...data,
     });
   } catch (error) {
-    console.log("Error in createAdmin: ",error);
+    console.log("Error in createAdmin: ", error);
   }
 };
 
@@ -71,9 +72,11 @@ export const getAdmin = async (req, res) => {
       email: snapshot.data().email,
       username: snapshot.data().username,
     };
-    snapshot.exists ? helper.response(res, 200, "Data Ditemukan", data) : helper.responseError(res, 400, "Data tidak ditemukan");
+    snapshot.exists
+      ? helper.response(res, 200, "Data Ditemukan", data)
+      : helper.responseError(res, 400, "Data tidak ditemukan");
   } catch (error) {
-    console.log("Error in getAdmin: " ,error);
+    console.log("Error in getAdmin: ", error);
   }
 };
 
@@ -85,9 +88,14 @@ export const getSkripsiProcess = async (req, res) => {
       id: doc.id,
       ...doc.data(),
     }));
-    return helper.response(res, 200, "Berhasil mendapatkan data mahasiswa", result);
+    return helper.response(
+      res,
+      200,
+      "Berhasil mendapatkan data mahasiswa",
+      result
+    );
   } catch (error) {
-    console.log("Error in getSkripsiProcess: " ,error);
+    console.log("Error in getSkripsiProcess: ", error);
   }
 };
 
@@ -96,7 +104,8 @@ export const KonfirmasiSkripsi = async (req, res) => {
     const { id } = req.params;
     const query = db.collection("mahasiswa").doc(id);
     const snapshot = await query.get();
-    if (!snapshot.exists) return helper.responseError(res, 400, "Data tidak ditemukan");
+    if (!snapshot.exists)
+      return helper.responseError(res, 400, "Data tidak ditemukan");
     const data = snapshot.data();
     emailService.sendEmailSkripsiVerified(data.email);
     await query.update({
@@ -104,7 +113,7 @@ export const KonfirmasiSkripsi = async (req, res) => {
     });
     return helper.response(res, 200, "Status skripsi Terverifikasi", data);
   } catch (error) {
-    console.log("Error in konfirmasiSkripsi: " ,error);
+    console.log("Error in konfirmasiSkripsi: ", error);
   }
 };
 
@@ -113,7 +122,8 @@ export const deleteSkripsi = async (req, res) => {
     const { id } = req.params;
     const query = db.collection("mahasiswa").doc(id);
     const snapshot = await query.get();
-    if (!snapshot.exists)  return helper.responseError(res, 400, "Data tidak ditemukan");
+    if (!snapshot.exists)
+      return helper.responseError(res, 400, "Data tidak ditemukan");
     const bucket = storage.bucket(process.env.BUCKET_NAME);
     const file = bucket.file(`${id}.pdf`);
     await file.delete();
@@ -124,7 +134,7 @@ export const deleteSkripsi = async (req, res) => {
     emailService.sendEmailSkripsiReject(data.email);
     return helper.response(res, 200, "Status skripsi Ditolak", data);
   } catch (error) {
-    console.log("Error in deleteSkripsi: " ,error);
+    console.log("Error in deleteSkripsi: ", error);
   }
 };
 
@@ -134,17 +144,19 @@ export const changePassword = async (req, res) => {
     const { old_password, new_password } = req.body;
     const query = db.collection("admin").doc(id);
     const snapshot = await query.get();
-    if (!snapshot.exists) return helper.responseError(res, 400, "Data tidak ditemukan");
+    if (!snapshot.exists)
+      return helper.responseError(res, 400, "Data tidak ditemukan");
     const user = snapshot.data();
     const isPasswordMatch = bcrypt.compareSync(old_password, user.password);
-    if (!isPasswordMatch) return helper.responseError(res, 400, "Password salah");
+    if (!isPasswordMatch)
+      return helper.responseError(res, 400, "Password salah");
     const hashPassword = bcrypt.hashSync(new_password, saltRounds);
     await query.update({
       password: hashPassword,
     });
     return helper.response(res, 200, "Password berhasil diubah", user);
   } catch (error) {
-    console.log("Error in ChangePassword: " ,error);
+    console.log("Error in ChangePassword: ", error);
   }
 };
 
@@ -154,11 +166,12 @@ export const updateProfile = async (req, res) => {
     const { username, email } = req.body;
     const query = db.collection("admin").doc(id);
     const snapshot = await query.get();
-    if (!snapshot.exists) return helper.responseError(res, 400, "Data tidak ditemukan");
-    await query.update({username,email});
+    if (!snapshot.exists)
+      return helper.responseError(res, 400, "Data tidak ditemukan");
+    await query.update({ username, email });
     return helper.response(res, 200, "Profile berhasil diubah");
   } catch (error) {
-    console.log("Error in updateProfilAdmin: ",error);
+    console.log("Error in updateProfilAdmin: ", error);
   }
 };
 
@@ -172,7 +185,7 @@ export const getDosen = async (_, res) => {
     }));
     return helper.response(res, 200, "Berhasil mendapatkan data dosen", result);
   } catch (error) {
-    console.log("Error in getDosen: ",error);
+    console.log("Error in getDosen: ", error);
   }
 };
 
@@ -185,12 +198,12 @@ export const tambahDosen = async (req, res) => {
       jurusan,
     };
     const result = await query.add(data);
-    return helper.response(res,200,"Dosen berhasil ditambahkan",{
-        id: result.id,
-        ...data,
-      })
+    return helper.response(res, 200, "Dosen berhasil ditambahkan", {
+      id: result.id,
+      ...data,
+    });
   } catch (error) {
-    console.log("Error in tambahDosen: ",error);
+    console.log("Error in tambahDosen: ", error);
   }
 };
 
@@ -199,11 +212,12 @@ export const deleteDosen = async (req, res) => {
     const id = req.params.id;
     const query = db.collection("dosen").doc(id);
     const snapshot = await query.get();
-    if (!snapshot.exists) return helper.responseError(res,400,"Dosen tidak ditemukan")
+    if (!snapshot.exists)
+      return helper.responseError(res, 400, "Dosen tidak ditemukan");
     await query.delete();
-  return helper.responseSuccess(res,200,"Dosen berhasil dihapus")
+    return helper.responseSuccess(res, 200, "Dosen berhasil dihapus");
   } catch (error) {
-    console.log("Error in deleteDosen: ",error);
+    console.log("Error in deleteDosen: ", error);
   }
 };
 
@@ -213,14 +227,15 @@ export const editDosen = async (req, res) => {
     const { nama, jurusan } = req.body;
     const query = db.collection("dosen").doc(id);
     const snapshot = await query.get();
-    if (!snapshot.exists) return helper.responseError(res,400,"Dosen tidak ditemukan")
+    if (!snapshot.exists)
+      return helper.responseError(res, 400, "Dosen tidak ditemukan");
     await query.update({
       nama,
       jurusan,
     });
-    return helper.responseSuccess(res,200,"Dosen berhasil diupdate")
+    return helper.responseSuccess(res, 200, "Dosen berhasil diupdate");
   } catch (error) {
-    console.log("Error in editDosen: ",error);
+    console.log("Error in editDosen: ", error);
   }
 };
 
@@ -229,13 +244,14 @@ export const lupaPassword = async (req, res) => {
     const { email } = req.body;
     const query = db.collection("admin");
     const snapshot = await query.where("email", "==", email).get();
-    if (snapshot.empty) return helper.responseError(res,400,"Email tidak terdaftar")
+    if (snapshot.empty)
+      return helper.responseError(res, 400, "Email tidak terdaftar");
     const RandomNumberOtp = Math.floor(1000 + Math.random() * 9000);
     emailService.sendOtpResetPasswordEmail(email, RandomNumberOtp);
     db.collection("admin").doc(snapshot.docs[0].id).update({
       otp: RandomNumberOtp,
     });
-    return helper.responseSuccess(res,200,"Berhasil mengirim kode OTP")
+    return helper.responseSuccess(res, 200, "Berhasil mengirim kode OTP");
   } catch (error) {
     console.log("Error in lupaPassword:", error);
   }
@@ -246,10 +262,12 @@ export const verifyOtp = async (req, res) => {
     const { email, otp } = req.body;
     const query = db.collection("admin");
     const snapshot = await query.where("email", "==", email).get();
-    if (snapshot.empty) return helper.responseError(res,400,"Email tidak terdaftar")
+    if (snapshot.empty)
+      return helper.responseError(res, 400, "Email tidak terdaftar");
     const data = snapshot.docs[0].data();
-    if (data.otp != otp) return helper.responseError(res,400,"Kode OTP tidak valid")
-    return helper.responseSuccess(res,200,"Kode OTP valid")
+    if (data.otp != otp)
+      return helper.responseError(res, 400, "Kode OTP tidak valid");
+    return helper.responseSuccess(res, 200, "Kode OTP valid");
   } catch (error) {
     console.log("Error in verifyOtp:", error);
   }
@@ -260,14 +278,15 @@ export const resetpassword = async (req, res) => {
     const { email, password } = req.body;
     const query = db.collection("admin");
     const snapshot = await query.where("email", "==", email).get();
-    if (snapshot.empty) return helper.responseError(res,400,"Email tidak valid")
+    if (snapshot.empty)
+      return helper.responseError(res, 400, "Email tidak valid");
     const hashPassword = bcrypt.hashSync(password, saltRounds);
     const result = await snapshot.docs[0].ref.update({
       password: hashPassword,
       otp: FieldValue.delete(),
     });
-    if (!result) return helper.responseError(res,400,"Gagal reset password")
-    return helper.responseSuccess(res,200,"Berhasil reset password")
+    if (!result) return helper.responseError(res, 400, "Gagal reset password");
+    return helper.responseSuccess(res, 200, "Berhasil reset password");
   } catch (error) {
     console.log("Error in resetpassword:", error);
   }
@@ -293,8 +312,12 @@ export const getMahasiswaSkripsiVerified = async (req, res) => {
         penguji: item.skripsi.penguji,
       };
     });
-    return helper.response(res,200,"Berhasil mendapatkan data mahasiswa", mapResult)
-
+    return helper.response(
+      res,
+      200,
+      "Berhasil mendapatkan data mahasiswa",
+      mapResult
+    );
   } catch (error) {
     console.log("Error in getMahasiswaSkripsiVerified:", error);
   }

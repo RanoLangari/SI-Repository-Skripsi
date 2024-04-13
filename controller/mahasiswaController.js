@@ -28,12 +28,15 @@ export const registerMahasiswa = async (req, res) => {
         message: "NIM sudah terdaftar",
       });
     }
-    const cekEmail = await db.collection("mahasiswa").where("email", "==", email).get();
+    const cekEmail = await db
+      .collection("mahasiswa")
+      .where("email", "==", email)
+      .get();
     if (!cekEmail.empty) {
       return res.status(400).send({
         message: "Email sudah terdaftar",
       });
-    } 
+    }
     const hashPassword = bcrypt.hashSync(password, saltRounds);
     const query = db.collection("mahasiswa");
     const data = {
@@ -109,8 +112,14 @@ export const uploadSkripsi = async (req, res) => {
     }
     const file = req.files.file;
     const { id } = req.user;
-    const { pembimbing1, pembimbing2, penguji, judul_skripsi, abstract } =
-      req.body;
+    const {
+      pembimbing1,
+      pembimbing2,
+      penguji,
+      judul_skripsi,
+      peminatan,
+      abstract,
+    } = req.body;
     const checkSkripsi = await db.collection("mahasiswa").doc(id).get();
     if (checkSkripsi.data().skripsi) {
       if (checkSkripsi.data().skripsi.status === "Terverifikasi") {
@@ -141,7 +150,6 @@ export const uploadSkripsi = async (req, res) => {
         opacity: 0.1,
       });
     }
-
     const pdfBytes = await pdfDoc.save();
     const buffer = Buffer.from(pdfBytes);
     file.data = buffer;
@@ -160,6 +168,7 @@ export const uploadSkripsi = async (req, res) => {
         pembimbing2,
         penguji,
         judul_skripsi,
+        peminatan,
         abstract,
         tanggal_upload: FieldValue.serverTimestamp(),
         status: "proses",
@@ -207,6 +216,9 @@ export const getHalfSkripsi = async (req, res) => {
       nama: item.nama,
       jurusan: item.jurusan,
       judul_skripsi: item.skripsi.judul_skripsi,
+      peminatan: !item.skripsi.peminatan
+        ? "Belum Diisi"
+        : item.skripsi.peminatan,
     }));
     return res.status(200).send({
       status: "success",
@@ -277,6 +289,9 @@ export const getSkripsiById = async (req, res) => {
       pembimbing1: data.skripsi.pembimbing1,
       pembimbing2: data.skripsi.pembimbing2,
       penguji: data.skripsi.penguji,
+      peminatan: !data.skripsi.peminatan
+        ? "Belum Diisi"
+        : data.skripsi.peminatan,
     };
     return res.status(200).send({
       status: "success",
@@ -320,18 +335,6 @@ export const updateProfile = async (req, res) => {
         message: "Data tidak ditemukan",
       });
     }
-    const cekNim = await db.collection("mahasiswa").where("nim", "==", nim).get();
-    if (!cekNim.empty) {
-      return res.status(400).send({
-        message: "NIM sudah terdaftar",
-      });
-    }
-    const cekEmail = await db.collection("mahasiswa").where("email", "==", email).get();
-    if (!cekEmail.empty) {
-      return res.status(400).send({
-        message: "Email sudah terdaftar",
-      });
-    }
     const data = snapshot.data();
     const mapingData = {
       nim: data.nim,
@@ -365,7 +368,7 @@ export const updateProfile = async (req, res) => {
 
 export const getSkripsiByJurusan = async (req, res) => {
   try {
-    const { jurusan } = req.params;
+    const { jurusan, peminatan } = req.body;
     const query = db.collection("mahasiswa");
     const snapshot = await query.where("jurusan", "==", jurusan).get();
     if (snapshot.empty) {
@@ -373,22 +376,56 @@ export const getSkripsiByJurusan = async (req, res) => {
         message: "Data tidak ditemukan",
       });
     }
-    const result = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    const filterResult = result.filter((item) => item.skripsi);
-    const mapData = filterResult.map((item) => ({
-      id: item.id,
-      nama: item.nama,
-      jurusan: item.jurusan,
-      judul_skripsi: item.skripsi.judul_skripsi,
-    }));
-    return res.status(200).send({
-      status: "success",
-      message: "Berhasil mendapatkan data skripsi",
-      data: mapData,
-    });
+    if (peminatan == "" || peminatan == "Belum Diisi") {
+      const result = snapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        .filter(
+          (item) => item.skripsi && item.skripsi.status === "Terverifikasi"
+        )
+        .map((item) => ({
+          id: item.id,
+          nama: item.nama,
+          jurusan: item.jurusan,
+          judul_skripsi: item.skripsi.judul_skripsi,
+          peminatan: !item.skripsi.peminatan
+            ? "Belum Diisi"
+            : item.skripsi.peminatan,
+        }));
+      return res.status(200).send({
+        status: "success",
+        message: "Berhasil mendapatkan data skripsi",
+        data: result,
+      });
+    } else {
+      const result = snapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        .filter(
+          (item) =>
+            item.skripsi &&
+            item.skripsi.status === "Terverifikasi" &&
+            item.skripsi.peminatan == peminatan
+        )
+        .map((item) => ({
+          id: item.id,
+          nama: item.nama,
+          jurusan: item.jurusan,
+          judul_skripsi: item.skripsi.judul_skripsi,
+          peminatan: !item.skripsi.peminatan
+            ? "Belum Diisi"
+            : item.skripsi.peminatan,
+        }));
+      return res.status(200).send({
+        status: "success",
+        message: "Berhasil mendapatkan data skripsi",
+        data: result,
+      });
+    }
   } catch (error) {
     console.log("Error in getSkripsiByJurusan:", error);
   }
@@ -414,21 +451,25 @@ export const getSkripsiByDate = async (req, res) => {
         message: "Data tidak ditemukan",
       });
     }
-    const result = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    const filterResult = result.filter((item) => item.skripsi);
-    const mapData = filterResult.map((item) => ({
-      id: item.id,
-      nama: item.nama,
-      jurusan: item.jurusan,
-      judul_skripsi: item.skripsi.judul_skripsi,
-    }));
+    const result = snapshot.docs
+      .map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+      .filter((item) => item.skripsi && item.skripsi.status === "Terverifikasi")
+      .map((item) => ({
+        id: item.id,
+        nama: item.nama,
+        jurusan: item.jurusan,
+        judul_skripsi: item.skripsi.judul_skripsi,
+        peminatan: !item.skripsi.peminatan
+          ? "Belum Diisi"
+          : item.skripsi.peminatan,
+      }));
     return res.status(200).send({
       status: "success",
       message: "Berhasil mendapatkan data skripsi",
-      data: mapData,
+      data: result,
     });
   } catch (error) {
     console.log("Error in getSkripsiByDate:", error);
