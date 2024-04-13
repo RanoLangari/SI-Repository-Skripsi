@@ -10,7 +10,7 @@ const port = process.env.PORT || 5000;
 const app = Express();
 app.use(
   cors({
-    origin: "*",
+    origin: process.env.FRONTEND_DOMAIN,
     credentials: false,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   })
@@ -22,7 +22,7 @@ app.use(fileUpload());
 app.use(Express.static("public"));
 app.use("/api/admin", adminRoutes);
 app.use("/api/mahasiswa", MahasiswaRoutes);
-app.use("*", (req, res) =>
+app.use("*", (_, res) =>
   res.status(404).json({ message: "Endpont Not Match" })
 );
 
