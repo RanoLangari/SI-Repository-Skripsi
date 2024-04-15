@@ -285,7 +285,6 @@ export const getSkripsiById = async (req, res) => {
       jurusan: data.jurusan,
       judul_skripsi: data.skripsi.judul_skripsi,
       abstract: data.skripsi.abstract,
-      skripsi_url: data.skripsi.skripsi_url,
       pembimbing1: data.skripsi.pembimbing1,
       pembimbing2: data.skripsi.pembimbing2,
       penguji: data.skripsi.penguji,
@@ -302,6 +301,28 @@ export const getSkripsiById = async (req, res) => {
     console.log("Error in getSkripsiById:", error);
   }
 };
+
+export const getUrlSkripsi = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const query = db.collection("mahasiswa").doc(id);
+    const snapshot = await query.get();
+    if (!snapshot.exists) {
+      return res.status(400).send({
+        message: "Data tidak ditemukan",
+      });
+    }
+    const data = snapshot.data();
+    return res.status(200).send({
+      status: "success",
+      message: "Berhasil mendapatkan data skripsi",
+      data: data.skripsi.skripsi_url,
+    });
+  } catch (error) {
+    console.log("Error in getUrlSkripsi:", error);
+  }
+};
+
 export const getProfile = async (req, res) => {
   try {
     const { id } = req.user;
@@ -328,6 +349,29 @@ export const updateProfile = async (req, res) => {
   try {
     const { id } = req.user;
     const { nim, nama, jurusan, semester, status_kelulusan, email } = req.body;
+    const checkNim = await db
+      .collection("mahasiswa")
+      .where("nim", "==", nim)
+      .get();
+    if (!checkNim.empty) {
+      if (checkNim.docs[0].id !== id) {
+        return res.status(400).send({
+          message: "NIM sudah terdaftar",
+        });
+      }
+    }
+    const checkEmail = await db
+      .collection("mahasiswa")
+      .where("email", "==", email)
+      .get();
+    if (!checkEmail.empty) {
+      if (checkEmail.docs[0].id !== id) {
+        return res.status(400).send({
+          message: "Email sudah terdaftar",
+        });
+      }
+    }
+
     const query = db.collection("mahasiswa").doc(id);
     const snapshot = await query.get();
     if (!snapshot.exists) {
