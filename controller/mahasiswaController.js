@@ -67,7 +67,7 @@ export const loginMahasiswa = async (req, res) => {
     const token = jwt.sign(
       { id: snapshot.docs[0].id },
       process.env.SECRET_KEY,
-      { expiresIn: "1d" }
+      { expiresIn: "1d" },
     );
     return helper.response(res, 200, "Login berhasil", { token });
   } catch (error) {
@@ -98,20 +98,20 @@ export const uploadSkripsi = async (req, res) => {
         return helper.responseError(
           res,
           400,
-          "Skripsi sudah diupload dan telah terverifikasi"
+          "Skripsi sudah diupload dan telah terverifikasi",
         );
       if (checkSkripsi.data().skripsi.status === "proses")
         return helper.responseError(
           res,
           400,
-          "Skripsi sudah diupload, Mohon tunggu konfirmasi dari admin"
+          "Skripsi sudah diupload, Mohon tunggu konfirmasi dari admin",
         );
     }
     const pdfDoc = await PDFDocument.load(file.data);
     const image = await pdfDoc.embedPng(
       await fs.promises.readFile(
-        path.join(process.cwd(), "public", "Logo_Undana.png")
-      )
+        path.join(process.cwd(), "public", "Logo_Undana.png"),
+      ),
     );
     const pages = pdfDoc.getPages();
     for (const page of pages) {
@@ -187,7 +187,7 @@ export const getHalfSkripsi = async (req, res) => {
       res,
       200,
       "Berhasil mendapatkan data skripsi",
-      filterResult
+      filterResult,
     );
   } catch (error) {
     console.log("Error in getHalfSkripsi:", error);
@@ -223,7 +223,7 @@ export const getSkripsiStatus = async (req, res) => {
       res,
       200,
       "Berhasil mendapatkan data skripsi",
-      mapData
+      mapData,
     );
   } catch (error) {
     console.log("Error in getSkripsiStatus:", error);
@@ -255,7 +255,7 @@ export const getSkripsiById = async (req, res) => {
       res,
       200,
       "Berhasil mendapatkan data skripsi",
-      mapData
+      mapData,
     );
   } catch (error) {
     console.log("Error in getSkripsiById:", error);
@@ -273,7 +273,7 @@ export const getUrlSkripsi = async (req, res) => {
       res,
       200,
       "Berhasil mendapatkan data skripsi",
-      data.skripsi.skripsi_url
+      data.skripsi.skripsi_url,
     );
   } catch (error) {
     console.log("Error in getUrlSkripsi:", error);
@@ -360,7 +360,7 @@ export const getSkripsiByJurusan = async (req, res) => {
         (item) =>
           item.skripsi &&
           item.skripsi.status === "Terverifikasi" &&
-          (peminatan === "" || item.skripsi.peminatan === peminatan)
+          (peminatan === "" || item.skripsi.peminatan === peminatan),
       )
       .map((item) => ({
         id: item.id,
@@ -375,7 +375,7 @@ export const getSkripsiByJurusan = async (req, res) => {
       res,
       200,
       "Berhasil mendapatkan data skripsi",
-      result
+      result,
     );
   } catch (error) {
     console.log("Error in getSkripsiByJurusan:", error);
@@ -418,7 +418,7 @@ export const getSkripsiByDate = async (req, res) => {
       res,
       200,
       "Berhasil mendapatkan data skripsi",
-      result
+      result,
     );
   } catch (error) {
     console.log("Error in getSkripsiByDate:", error);
