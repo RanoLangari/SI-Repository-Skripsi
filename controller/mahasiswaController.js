@@ -8,9 +8,10 @@ import { FieldValue } from "@google-cloud/firestore";
 import { PDFDocument } from "pdf-lib";
 import fs from "fs";
 import EmailService from "../utils/emailService.js";
+import Helper from "../utils/helper.js";
 
 const emailService = new EmailService();
-
+const helper = new Helper();
 dotenv.config();
 const saltRounds = 8;
 
@@ -22,21 +23,14 @@ export const registerMahasiswa = async (req, res) => {
       .collection("mahasiswa")
       .where("nim", "==", nim)
       .get();
-
-    if (!cekNim.empty) {
-      return res.status(400).send({
-        message: "NIM sudah terdaftar",
-      });
-    }
+    if (!cekNim.empty)
+      return helper.responseError(res, 400, "NIM sudah terdaftar");
     const cekEmail = await db
       .collection("mahasiswa")
       .where("email", "==", email)
       .get();
-    if (!cekEmail.empty) {
-      return res.status(400).send({
-        message: "Email sudah terdaftar",
-      });
-    }
+    if (!cekEmail.empty)
+      return helper.responseError(res, 400, "Email sudah terdaftar");
     const hashPassword = bcrypt.hashSync(password, saltRounds);
     const query = db.collection("mahasiswa");
     const data = {
@@ -49,21 +43,11 @@ export const registerMahasiswa = async (req, res) => {
       password: hashPassword,
     };
     const snapshot = await query.where("nim", "==", nim).get();
-    if (!snapshot.empty) {
-      return res.status(400).send({
-        message: "NIM sudah terdaftar",
-      });
-    }
+    if (!snapshot.empty)
+      return helper.responseError(res, 400, "NIM sudah terdaftar");
     const result = await query.add(data);
-    if (!result) {
-      return res.status(400).send({
-        message: "Register gagal",
-      });
-    }
-    return res.status(200).send({
-      status: "success",
-      message: "Register berhasil",
-    });
+    if (!result) return helper.responseError(res, 400, "Register gagal");
+    return helper.responseSuccess(res, 200, "Register berhasil");
   } catch (error) {
     console.log("Error in registerMahasiswa:", error);
   }
@@ -74,30 +58,18 @@ export const loginMahasiswa = async (req, res) => {
     const { nim, password } = req.body;
     const query = db.collection("mahasiswa");
     const snapshot = await query.where("nim", "==", nim).get();
-    if (snapshot.empty) {
-      return res.status(400).send({
-        message: "NIM tidak terdaftar",
-      });
-    }
+    if (snapshot.empty)
+      return helper.responseError(res, 400, "NIM tidak terdaftar");
     const userData = snapshot.docs[0].data();
     const isPasswordCorrect = await bcrypt.compare(password, userData.password);
-    if (!isPasswordCorrect) {
-      return res.status(400).send({
-        message: "Password salah",
-      });
-    }
+    if (!isPasswordCorrect)
+      return helper.responseError(res, 400, "Password salah");
     const token = jwt.sign(
       { id: snapshot.docs[0].id },
       process.env.SECRET_KEY,
-      { expiresIn: "1d" },
+      { expiresIn: "1d" }
     );
-    res.status(200).send({
-      status: "success",
-      message: "Login berhasil",
-      data: {
-        token,
-      },
-    });
+    return helper.response(res, 200, "Login berhasil", { token });
   } catch (error) {
     console.error("Error in loginMahasiswa:", error);
   }
@@ -122,22 +94,24 @@ export const uploadSkripsi = async (req, res) => {
     } = req.body;
     const checkSkripsi = await db.collection("mahasiswa").doc(id).get();
     if (checkSkripsi.data().skripsi) {
-      if (checkSkripsi.data().skripsi.status === "Terverifikasi") {
-        return res.status(400).send({
-          message: "Skripsi sudah diupload dan telah terverifikasi",
-        });
-      }
-      if (checkSkripsi.data().skripsi.status === "proses") {
-        return res.status(400).send({
-          message: "Skripsi sudah diupload, Mohon tunggu konfirmasi dari admin",
-        });
-      }
+      if (checkSkripsi.data().skripsi.status === "Terverifikasi")
+        return helper.responseError(
+          res,
+          400,
+          "Skripsi sudah diupload dan telah terverifikasi"
+        );
+      if (checkSkripsi.data().skripsi.status === "proses")
+        return helper.responseError(
+          res,
+          400,
+          "Skripsi sudah diupload, Mohon tunggu konfirmasi dari admin"
+        );
     }
     const pdfDoc = await PDFDocument.load(file.data);
     const image = await pdfDoc.embedPng(
       await fs.promises.readFile(
-        path.join(process.cwd(), "public", "Logo_Undana.png"),
-      ),
+        path.join(process.cwd(), "public", "Logo_Undana.png")
+      )
     );
     const pages = pdfDoc.getPages();
     for (const page of pages) {
@@ -176,17 +150,10 @@ export const uploadSkripsi = async (req, res) => {
       const result = await query.update({
         skripsi: data,
       });
-      if (!result) {
-        return res.status(400).send({
-          message: "Gagal upload skripsi",
-        });
-      }
-      res.status(200).send({
-        status: "success",
-        message: "Skripsi berhasil diupload",
-        data: {
-          skripsi: publicUrl,
-        },
+      if (!result)
+        return helper.responseError(res, 400, "Gagal upload skripsi");
+      return helper.responseSuccess(res, 200, "Skripsi berhasil diupload", {
+        publicUrl,
       });
     });
     blobStream.end(file.data);
@@ -199,32 +166,29 @@ export const getHalfSkripsi = async (req, res) => {
   try {
     const query = db.collection("mahasiswa");
     const snapshot = await query.where("skripsi", "!=", null).get();
-    if (snapshot.empty) {
-      return res.status(400).send({
-        message: "Data tidak ditemukan",
-      });
-    }
-    const filterResult = snapshot.docs.filter(
-      (item) => item.data().skripsi.status === "Terverifikasi",
+    if (snapshot.empty)
+      return helper.responseError(res, 400, "Data tidak ditemukan");
+    const filterResult = snapshot.docs
+      .filter((item) => item.data().skripsi.status === "Terverifikasi")
+      .map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+      .map((item) => ({
+        id: item.id,
+        nama: item.nama,
+        jurusan: item.jurusan,
+        judul_skripsi: item.skripsi.judul_skripsi,
+        peminatan: !item.skripsi.peminatan
+          ? "Belum Diisi"
+          : item.skripsi.peminatan,
+      }));
+    return helper.response(
+      res,
+      200,
+      "Berhasil mendapatkan data skripsi",
+      filterResult
     );
-    const result = filterResult.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    const mapData = result.map((item) => ({
-      id: item.id,
-      nama: item.nama,
-      jurusan: item.jurusan,
-      judul_skripsi: item.skripsi.judul_skripsi,
-      peminatan: !item.skripsi.peminatan
-        ? "Belum Diisi"
-        : item.skripsi.peminatan,
-    }));
-    return res.status(200).send({
-      status: "success",
-      message: "Berhasil mendapatkan data skripsi",
-      data: mapData,
-    });
   } catch (error) {
     console.log("Error in getHalfSkripsi:", error);
   }
@@ -235,11 +199,8 @@ export const getSkripsiStatus = async (req, res) => {
     const { id } = req.user;
     const query = db.collection("mahasiswa").doc(id);
     const snapshot = await query.get();
-    if (!snapshot.exists) {
-      return res.status(400).send({
-        message: "Data tidak ditemukan",
-      });
-    }
+    if (!snapshot.exists)
+      return helper.responseError(res, 400, "Data tidak ditemukan");
     let item = snapshot.data();
     if (!item.skripsi) {
       item = {
@@ -258,11 +219,12 @@ export const getSkripsiStatus = async (req, res) => {
       pembimbing2: item.skripsi.pembimbing2,
       penguji: item.skripsi.penguji,
     };
-    return res.status(200).send({
-      status: "success",
-      message: "Berhasil mendapatkan data skripsi",
-      data: mapData,
-    });
+    return helper.response(
+      res,
+      200,
+      "Berhasil mendapatkan data skripsi",
+      mapData
+    );
   } catch (error) {
     console.log("Error in getSkripsiStatus:", error);
   }
@@ -273,11 +235,8 @@ export const getSkripsiById = async (req, res) => {
     const id = req.params.id;
     const query = db.collection("mahasiswa").doc(id);
     const snapshot = await query.get();
-    if (!snapshot.exists) {
-      return res.status(400).send({
-        message: "Data tidak ditemukan",
-      });
-    }
+    if (!snapshot.exists)
+      return helper.responseError(res, 400, "Data tidak ditemukan");
     const data = snapshot.data();
     const mapData = {
       id: snapshot.id,
@@ -292,11 +251,12 @@ export const getSkripsiById = async (req, res) => {
         ? "Belum Diisi"
         : data.skripsi.peminatan,
     };
-    return res.status(200).send({
-      status: "success",
-      message: "Berhasil mendapatkan data skripsi",
-      data: mapData,
-    });
+    return helper.response(
+      res,
+      200,
+      "Berhasil mendapatkan data skripsi",
+      mapData
+    );
   } catch (error) {
     console.log("Error in getSkripsiById:", error);
   }
@@ -307,17 +267,14 @@ export const getUrlSkripsi = async (req, res) => {
     const { id } = req.params;
     const query = db.collection("mahasiswa").doc(id);
     const snapshot = await query.get();
-    if (!snapshot.exists) {
-      return res.status(400).send({
-        message: "Data tidak ditemukan",
-      });
-    }
+    if (!snapshot.exists) return helper(res, 200, "Data tidak ditemukan");
     const data = snapshot.data();
-    return res.status(200).send({
-      status: "success",
-      message: "Berhasil mendapatkan data skripsi",
-      data: data.skripsi.skripsi_url,
-    });
+    return helper.response(
+      res,
+      200,
+      "Berhasil mendapatkan data skripsi",
+      data.skripsi.skripsi_url
+    );
   } catch (error) {
     console.log("Error in getUrlSkripsi:", error);
   }
@@ -328,18 +285,10 @@ export const getProfile = async (req, res) => {
     const { id } = req.user;
     const query = db.collection("mahasiswa").doc(id);
     const snapshot = await query.get();
-    if (!snapshot.exists) {
-      return res.status(400).send({
-        message: "Data tidak ditemukan",
-      });
-    }
+    if (!snapshot.exists)
+      return helper.responseError(res, 400, "Data tidak ditemukan");
     const data = snapshot.data();
-
-    return res.status(200).send({
-      status: "success",
-      message: "Berhasil mendapatkan data profile",
-      data,
-    });
+    return helper.response(res, 200, "Berhasil mendapatkan data profile", data);
   } catch (error) {
     console.log("Error in getProfile:", error);
   }
@@ -354,31 +303,22 @@ export const updateProfile = async (req, res) => {
       .where("nim", "==", nim)
       .get();
     if (!checkNim.empty) {
-      if (checkNim.docs[0].id !== id) {
-        return res.status(400).send({
-          message: "NIM sudah terdaftar",
-        });
-      }
+      if (checkNim.docs[0].id !== id)
+        return helper.responseError(res, 400, "NIM sudah terdaftar");
     }
     const checkEmail = await db
       .collection("mahasiswa")
       .where("email", "==", email)
       .get();
     if (!checkEmail.empty) {
-      if (checkEmail.docs[0].id !== id) {
-        return res.status(400).send({
-          message: "Email sudah terdaftar",
-        });
-      }
+      if (checkEmail.docs[0].id !== id)
+        return helper.responseError(res, 400, "Email sudah terdaftar");
     }
 
     const query = db.collection("mahasiswa").doc(id);
     const snapshot = await query.get();
-    if (!snapshot.exists) {
-      return res.status(400).send({
-        message: "Data tidak ditemukan",
-      });
-    }
+    if (!snapshot.exists)
+      return responseError(res, 400, "Data tidak ditemukan");
     const data = snapshot.data();
     const mapingData = {
       nim: data.nim,
@@ -396,15 +336,8 @@ export const updateProfile = async (req, res) => {
       status_kelulusan: status_kelulusan || mapingData.status_kelulusan,
       email: email || mapingData.email,
     });
-    if (!result) {
-      return res.status(400).send({
-        message: "Gagal update profile",
-      });
-    }
-    return res.status(200).send({
-      status: "success",
-      message: "Berhasil update profile",
-    });
+    if (!result) return helper.responseError(res, 400, "Gagal update profile");
+    return helper.responseSuccess(res, 200, "Berhasil update profile");
   } catch (error) {
     console.log("Error in updateProfile:", error);
   }
@@ -416,60 +349,34 @@ export const getSkripsiByJurusan = async (req, res) => {
     const query = db.collection("mahasiswa");
     const snapshot = await query.where("jurusan", "==", jurusan).get();
     if (snapshot.empty) {
-      return res.status(400).send({
-        message: "Data tidak ditemukan",
-      });
+      return helper.responseError(res, 400, "Data tidak ditemukan");
     }
-    if (peminatan == "" || peminatan == "Belum Diisi") {
-      const result = snapshot.docs
-        .map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-        .filter(
-          (item) => item.skripsi && item.skripsi.status === "Terverifikasi",
-        )
-        .map((item) => ({
-          id: item.id,
-          nama: item.nama,
-          jurusan: item.jurusan,
-          judul_skripsi: item.skripsi.judul_skripsi,
-          peminatan: !item.skripsi.peminatan
-            ? "Belum Diisi"
-            : item.skripsi.peminatan,
-        }));
-      return res.status(200).send({
-        status: "success",
-        message: "Berhasil mendapatkan data skripsi",
-        data: result,
-      });
-    } else {
-      const result = snapshot.docs
-        .map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-        .filter(
-          (item) =>
-            item.skripsi &&
-            item.skripsi.status === "Terverifikasi" &&
-            item.skripsi.peminatan == peminatan,
-        )
-        .map((item) => ({
-          id: item.id,
-          nama: item.nama,
-          jurusan: item.jurusan,
-          judul_skripsi: item.skripsi.judul_skripsi,
-          peminatan: !item.skripsi.peminatan
-            ? "Belum Diisi"
-            : item.skripsi.peminatan,
-        }));
-      return res.status(200).send({
-        status: "success",
-        message: "Berhasil mendapatkan data skripsi",
-        data: result,
-      });
-    }
+    const result = snapshot.docs
+      .map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+      .filter(
+        (item) =>
+          item.skripsi &&
+          item.skripsi.status === "Terverifikasi" &&
+          (peminatan === "" || item.skripsi.peminatan === peminatan)
+      )
+      .map((item) => ({
+        id: item.id,
+        nama: item.nama,
+        jurusan: item.jurusan,
+        judul_skripsi: item.skripsi.judul_skripsi,
+        peminatan: !item.skripsi.peminatan
+          ? "Belum Diisi"
+          : item.skripsi.peminatan,
+      }));
+    return helper.response(
+      res,
+      200,
+      "Berhasil mendapatkan data skripsi",
+      result
+    );
   } catch (error) {
     console.log("Error in getSkripsiByJurusan:", error);
   }
@@ -490,11 +397,8 @@ export const getSkripsiByDate = async (req, res) => {
       .where("skripsi.tanggal_upload", "<=", convert_akhir)
       .get();
 
-    if (snapshot.empty) {
-      return res.status(400).send({
-        message: "Data tidak ditemukan",
-      });
-    }
+    if (snapshot.empty)
+      return helper.responseError(res, 400, "Data tidak ditemukan");
     const result = snapshot.docs
       .map((doc) => ({
         id: doc.id,
@@ -510,11 +414,12 @@ export const getSkripsiByDate = async (req, res) => {
           ? "Belum Diisi"
           : item.skripsi.peminatan,
       }));
-    return res.status(200).send({
-      status: "success",
-      message: "Berhasil mendapatkan data skripsi",
-      data: result,
-    });
+    return helper.response(
+      res,
+      200,
+      "Berhasil mendapatkan data skripsi",
+      result
+    );
   } catch (error) {
     console.log("Error in getSkripsiByDate:", error);
   }
@@ -526,31 +431,17 @@ export const changePassword = async (req, res) => {
     const { old_password, new_password } = req.body;
     const query = db.collection("mahasiswa").doc(id);
     const snapshot = await query.get();
-    if (!snapshot.exists) {
-      return res.status(400).send({
-        message: "Data tidak ditemukan",
-      });
-    }
+    if (!snapshot.exists)
+      return helper.responseError(res, 400, "Data tidak ditemukan");
     const data = snapshot.data();
     const checkPassword = bcrypt.compareSync(old_password, data.password);
-    if (!checkPassword) {
-      return res.status(400).send({
-        message: "Password salah",
-      });
-    }
+    if (!checkPassword) return helper.responseError(res, 400, "Password salah");
     const hashPassword = bcrypt.hashSync(new_password, saltRounds);
     const result = await query.update({
       password: hashPassword,
     });
-    if (!result) {
-      return res.status(400).send({
-        message: "Gagal update password",
-      });
-    }
-    return res.status(200).send({
-      status: "success",
-      message: "Berhasil update password",
-    });
+    if (!result) return helper.responseError(res, 400, "Gagal update password");
+    return helper.responseSuccess(res, 200, "Berhasil update password");
   } catch (error) {
     console.log("Error in changePassword:", error);
   }
@@ -564,11 +455,7 @@ export const getDosenByJurusan = async (req, res) => {
     const result = snapshot.docs.map((doc) => ({
       nama: doc.data().nama,
     }));
-    res.status(200).send({
-      status: "success",
-      message: "Berhasil mendapatkan data dosen",
-      data: result,
-    });
+    return helper.response(res, 200, "Berhasil mendapatkan data dosen", result);
   } catch (error) {
     console.log("Error in getDosenByJurusan:", error);
   }
@@ -579,20 +466,14 @@ export const lupaPassword = async (req, res) => {
     const { email } = req.body;
     const query = db.collection("mahasiswa");
     const snapshot = await query.where("email", "==", email).get();
-    if (snapshot.empty) {
-      return res.status(400).send({
-        message: "Email Tidak terdaftar",
-      });
-    }
+    if (snapshot.empty)
+      return helper.responseError(res, 400, "Email tidak valid");
     const RandomNumberOtp = Math.floor(1000 + Math.random() * 9000);
     emailService.sendOtpResetPasswordEmail(email, RandomNumberOtp);
     db.collection("mahasiswa").doc(snapshot.docs[0].id).update({
       otp: RandomNumberOtp,
     });
-    res.status(200).send({
-      status: "success",
-      message: "Berhasil mengirim kode OTP",
-    });
+    return helper.responseSuccess(res, 200, "Berhasil mengirim kode OTP");
   } catch (error) {
     console.log("Error in lupaPassword:", error);
   }
@@ -603,21 +484,12 @@ export const verifyOtp = async (req, res) => {
     const { email, otp } = req.body;
     const query = db.collection("mahasiswa");
     const snapshot = await query.where("email", "==", email).get();
-    if (snapshot.empty) {
-      return res.status(400).send({
-        message: "Email tidak terdaftar",
-      });
-    }
+    if (snapshot.empty)
+      return helper.responseError(res, 400, "Email tidak terdaftar");
     const data = snapshot.docs[0].data();
-    if (data.otp != otp) {
-      return res.status(400).send({
-        message: "Kode OTP Tidak Valid",
-      });
-    }
-    return res.status(200).send({
-      status: "success",
-      message: "Kode OTP Valid",
-    });
+    if (data.otp != otp)
+      return helper.responseError(res, 400, "Kode OTP Tidak Valid");
+    return helper.responseSuccess(res, 200, "Kode OTP Valid");
   } catch (error) {
     console.log("Error in verifyOtp:", error);
   }
@@ -628,25 +500,15 @@ export const resetpassword = async (req, res) => {
     const { email, password } = req.body;
     const query = db.collection("mahasiswa");
     const snapshot = await query.where("email", "==", email).get();
-    if (snapshot.empty) {
-      return res.status(400).send({
-        message: "Email tidak valid",
-      });
-    }
+    if (snapshot.empty)
+      return helper.responseError(res, 400, "Email tidak valid");
     const hashPassword = bcrypt.hashSync(password, saltRounds);
     const result = await snapshot.docs[0].ref.update({
       password: hashPassword,
       otp: FieldValue.delete(),
     });
-    if (!result) {
-      return res.status(400).send({
-        message: "Gagal reset password",
-      });
-    }
-    return res.status(200).send({
-      status: "success",
-      message: "Berhasil reset password",
-    });
+    if (!result) return helper.responseError(res, 400, "Gagal reset password");
+    return helper.responseSuccess(res, 200, "Berhasil reset password");
   } catch (error) {
     console.log("Error in resetpassword:", error);
   }
