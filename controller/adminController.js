@@ -86,7 +86,11 @@ export const getSkripsiProcess = async (req, res) => {
     const snapshot = await query.where("skripsi.status", "==", "proses").get();
     const result = snapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data(),
+      nim: doc.data().nim,
+      nama: doc.data().nama,
+      judul: doc.data().skripsi.judul_skripsi,
+      jurusan: doc.data().jurusan,
+      status: doc.data().skripsi.status,
     }));
     return helper.response(
       res,
