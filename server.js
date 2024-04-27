@@ -13,7 +13,7 @@ app.use(
     origin: process.env.FRONTEND_DOMAIN,
     credentials: false,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-  })
+  }),
 );
 
 app.use(Express.json());
@@ -26,7 +26,7 @@ app.use("/", (_, res) => {
 app.use("/api/admin", adminRoutes);
 app.use("/api/mahasiswa", MahasiswaRoutes);
 app.use("*", (_, res) =>
-  res.status(404).json({ message: "Endpont Not Match" })
+  res.status(404).json({ message: "Endpont Not Match" }),
 );
 
 app.listen(port, () => {
