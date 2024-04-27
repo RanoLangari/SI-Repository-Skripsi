@@ -20,7 +20,7 @@ app.use(Express.json());
 app.use(Express.urlencoded({ extended: true }));
 app.use(fileUpload());
 app.use(Express.static("public"));
-app.use("/", (_, res) => {
+app.get("/", (_, res) => {
   res.send("API REPOSITORY FEB UNDANA UP AND RUNNING");
 });
 app.use("/api/admin", adminRoutes);
