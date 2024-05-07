@@ -288,7 +288,23 @@ export const getProfile = async (req, res) => {
     if (!snapshot.exists)
       return helper.responseError(res, 400, "Data tidak ditemukan");
     const data = snapshot.data();
-    return helper.response(res, 200, "Berhasil mendapatkan data profile", data);
+    const mapData = {
+      nim: data.nim,
+      nama: data.nama,
+      jurusan: data.jurusan,
+      semester: data.semester,
+      status_kelulusan: data.status_kelulusan,
+      email: data.email,
+      status_skripsi: data.skripsi ? data.skripsi.status : "Belum Upload",
+      alasan_tolak: data.skripsi ? data.skripsi.alasan : "",
+    };
+
+    return helper.response(
+      res,
+      200,
+      "Berhasil mendapatkan data profile",
+      mapData
+    );
   } catch (error) {
     console.log("Error in getProfile:", error);
   }

@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import EmailService from "../utils/emailService.js";
 import Helper from "../utils/helper.js";
+import exceljs from "exceljs";
 dotenv.config();
 
 const saltRounds = 8;
@@ -124,6 +125,7 @@ export const KonfirmasiSkripsi = async (req, res) => {
 export const deleteSkripsi = async (req, res) => {
   try {
     const { id } = req.params;
+    const { alasan } = req.body;
     const query = db.collection("mahasiswa").doc(id);
     const snapshot = await query.get();
     if (!snapshot.exists)
@@ -132,7 +134,9 @@ export const deleteSkripsi = async (req, res) => {
     const file = bucket.file(`${id}.pdf`);
     await file.delete();
     await query.update({
-      skripsi: FieldValue.delete(),
+      "skripsi.skripsi_url": FieldValue.delete(),
+      "skripsi.status": "Ditolak",
+      "skripsi.alasan": alasan,
     });
     const data = snapshot.data();
     emailService.sendEmailSkripsiReject(data.email);
@@ -309,7 +313,6 @@ export const getMahasiswaSkripsiVerified = async (req, res) => {
         nama: item.nama,
         nim: item.nim,
         jurusan: item.jurusan,
-        semester: item.semester,
         judul_skripsi: item.skripsi.judul_skripsi,
         pembimbing1: item.skripsi.pembimbing1,
         pembimbing2: item.skripsi.pembimbing2,
@@ -324,5 +327,110 @@ export const getMahasiswaSkripsiVerified = async (req, res) => {
     );
   } catch (error) {
     console.log("Error in getMahasiswaSkripsiVerified:", error);
+  }
+};
+
+export const getAllMahasiswa = async (_, res) => {
+  try {
+    const query = db.collection("mahasiswa");
+    const snapshot = await query.where("status_kelulusan", "==", "Lulus").get();
+    const result = snapshot.docs
+      .map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+      .map((item) => {
+        return {
+          nama: item.nama,
+          nim: item.nim,
+          jurusan: item.jurusan,
+        };
+      });
+    return helper.response(
+      res,
+      200,
+      "Berhasil mendapatkan data mahasiswa",
+      result
+    );
+  } catch (error) {}
+};
+
+export const getAllSkripsi = async (_, res) => {
+  try {
+    const query = db.collection("mahasiswa");
+    const snapshot = await query.where("skripsi.status", "==", "proses").get();
+    const result = snapshot.docs
+      .map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+      .map((item) => {
+        return {
+          nama: item.nama,
+          nim: item.nim,
+          jurusan: item.jurusan,
+          judul_skripsi: item.skripsi.judul_skripsi,
+          pembimbing1: item.skripsi.pembimbing1,
+          pembimbing2: item.skripsi.pembimbing2,
+          penguji: item.skripsi.penguji,
+        };
+      });
+    return helper.response(
+      res,
+      200,
+      "Berhasil mendapatkan data skripsi",
+      result
+    );
+  } catch (error) {
+    console.log("Error in getAllSkripsi: ", error);
+  }
+};
+
+export const importExcelMhs = async (req, res) => {
+  try {
+    if (!req.files || Object.keys(req.files).length === 0)
+      return helper.responseError(res, 400, "No files were uploaded.");
+    const file = req.files.file;
+    const workbook = new exceljs.Workbook();
+    await workbook.xlsx.load(file.data);
+    const worksheet = workbook.worksheets[0];
+    let data = [];
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber !== 1) {
+        data.push({
+          nim: row.values[7],
+          nama: row.values[8],
+          jurusan: row.values[9],
+          password: bcrypt.hashSync(`${row.values[7]}`, saltRounds),
+          status_kelulusan: "Belum Lulus",
+          semester: `20${row.values[7]}`.split("").splice(0, 4).join(""),
+        });
+      }
+    });
+    console.log(data);
+    if (
+      data.filter(
+        (item) =>
+          item.nim === undefined ||
+          item.nama === undefined ||
+          item.jurusan === undefined ||
+          item.nim.length !== 10
+      ).length > 0
+    )
+      return helper.responseError(
+        res,
+        400,
+        "Isi File Excel tidak valid, mohon gunakan template yang disediakan"
+      );
+    // data.splice(0, 2);
+    // const batch = db.batch();
+    // data.forEach((item) => {
+    //   const ref = db.collection("mahasiswa").doc();
+    //   batch.set(ref, item);
+    // });
+    // await batch.commit();
+    return helper.responseSuccess(res, 200, "Data mahasiswa berhasil diimport");
+  } catch (error) {
+    console.log("Error in importExcelMhs: ", error);
   }
 };
