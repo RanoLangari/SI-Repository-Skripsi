@@ -137,6 +137,8 @@ export const deleteSkripsi = async (req, res) => {
       "skripsi.skripsi_url": FieldValue.delete(),
       "skripsi.status": "Ditolak",
       "skripsi.alasan": alasan,
+      "skripsi.peminatan": FieldValue.delete(),
+      "skripsi.abstract": FieldValue.delete(),
     });
     const data = snapshot.data();
     emailService.sendEmailSkripsiReject(data.email);
@@ -525,7 +527,7 @@ export const deleteMahasiswa = async (req, res) => {
 
 export const tambahDataSkripsi = async (req, res) => {
   try {
-    const { nim, pembimbing1, pembimbing2, penguji, judul_skripsi } = req.body;
+    let { nim, pembimbing1, pembimbing2, penguji, judul_skripsi } = req.body;
     const query = db.collection("mahasiswa");
     const snapshot = await query.where("nim", "==", nim).get();
     if (snapshot.empty)
@@ -543,7 +545,7 @@ export const tambahDataSkripsi = async (req, res) => {
         pembimbing1,
         pembimbing2,
         penguji,
-        judul_skripsi,
+        judul_skripsi: helper.capitalizeFirstLetter(judul_skripsi),
       },
     };
     await query.doc(snapshot.docs[0].id).update({
@@ -568,12 +570,13 @@ export const UploadDataSkripsi = async (req, res) => {
     let data = [];
     worksheet.eachRow((row, rowNumber) => {
       if (rowNumber !== 1) {
+        let judul_skripsi = helper.capitalizeFirstLetter(row.values[11]);
         data.push({
           nim: row.values[7],
           pembimbing1: row.values[8],
           pembimbing2: row.values[9],
           penguji: row.values[10],
-          judul_skripsi: row.values[11],
+          judul_skripsi,
         });
       }
     });

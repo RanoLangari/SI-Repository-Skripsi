@@ -84,28 +84,32 @@ export const uploadSkripsi = async (req, res) => {
     }
     const file = req.files.file;
     const { id } = req.user;
-    const {
-      pembimbing1,
-      pembimbing2,
-      penguji,
-      judul_skripsi,
-      peminatan,
-      abstract,
-    } = req.body;
+    const { peminatan, abstract } = req.body;
+    if (!file.mimetype.includes("pdf"))
+      return helper.responseError(res, 400, "File harus berformat PDF");
     const checkSkripsi = await db.collection("mahasiswa").doc(id).get();
-    if (checkSkripsi.data().skripsi) {
-      if (checkSkripsi.data().skripsi.status === "Terverifikasi")
-        return helper.responseError(
-          res,
-          400,
-          "Skripsi sudah diupload dan telah terverifikasi"
-        );
-      if (checkSkripsi.data().skripsi.status === "proses")
-        return helper.responseError(
-          res,
-          400,
-          "Skripsi sudah diupload, Mohon tunggu konfirmasi dari admin"
-        );
+    if (!checkSkripsi.exists)
+      return helper.responseError(res, 400, "Data tidak ditemukan");
+    if (!checkSkripsi.data().skripsi) {
+      return helper.responseError(
+        res,
+        400,
+        "Data Skripsi Anda Belum DImasukan Oleh Admin Kedalam Sistem, Mohon Hubungi Admin"
+      );
+    }
+    if (checkSkripsi.data().skripsi.status === "Terverifikasi") {
+      return helper.responseError(
+        res,
+        400,
+        "Skripsi sudah diupload dan telah terverifikasi"
+      );
+    }
+    if (checkSkripsi.data().skripsi.status === "proses") {
+      return helper.responseError(
+        res,
+        400,
+        "Skripsi sudah diupload, Mohon tunggu konfirmasi dari admin"
+      );
     }
     const pdfDoc = await PDFDocument.load(file.data);
     const image = await pdfDoc.embedPng(
@@ -136,19 +140,18 @@ export const uploadSkripsi = async (req, res) => {
     blobStream.on("finish", async () => {
       const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
       const query = db.collection("mahasiswa").doc(id);
-      const data = {
-        skripsi_url: publicUrl,
-        pembimbing1,
-        pembimbing2,
-        penguji,
-        judul_skripsi,
-        peminatan,
-        abstract,
-        tanggal_upload: FieldValue.serverTimestamp(),
-        status: "proses",
-      };
       const result = await query.update({
-        skripsi: data,
+        skripsi: {
+          judul_skripsi: checkSkripsi.data().skripsi.judul_skripsi,
+          pembimbing1: checkSkripsi.data().skripsi.pembimbing1,
+          pembimbing2: checkSkripsi.data().skripsi.pembimbing2,
+          penguji: checkSkripsi.data().skripsi.penguji,
+          skripsi_url: publicUrl,
+          peminatan,
+          abstract,
+          tanggal_upload: FieldValue.serverTimestamp(),
+          status: "proses",
+        },
       });
       if (!result)
         return helper.responseError(res, 400, "Gagal upload skripsi");
