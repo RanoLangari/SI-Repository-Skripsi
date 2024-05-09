@@ -18,6 +18,14 @@ import {
   getAllMahasiswa,
   getAllSkripsi,
   importExcelMhs,
+  addMahasiswa,
+  editDataMahasiswa,
+  deleteMahasiswa,
+  tambahDataSkripsi,
+  UploadDataSkripsi,
+  getSkripsiById,
+  updateSkripsiById,
+  deleteSkripsiById,
 } from "../controller/adminController.js";
 import { isAuthorized } from "../utils/auth.js";
 import Express from "express";
@@ -47,4 +55,12 @@ Router.put("/edit-dosen/:id", isAuthorized, editDosen);
 Router.get("/get-all-mahasiswa", isAuthorized, getAllMahasiswa);
 Router.get("/get-all-skripsi", isAuthorized, getAllSkripsi);
 Router.post("/import-excel-mhs", isAuthorized, importExcelMhs);
+Router.post("/add-mahasiswa", isAuthorized, addMahasiswa);
+Router.put("/edit-data-mahasiswa/:id", isAuthorized, editDataMahasiswa);
+Router.delete("/delete-mahasiswa/:id", isAuthorized, deleteMahasiswa);
+Router.post("/tambah-data-skripsi", isAuthorized, tambahDataSkripsi);
+Router.post("/upload-data-skripsi", isAuthorized, UploadDataSkripsi);
+Router.get("/get-skripsi/:id", isAuthorized, getSkripsiById);
+Router.put("/update-skripsi/:id", isAuthorized, updateSkripsiById);
+Router.delete("/delete-skripsi/:id", isAuthorized, deleteSkripsiById);
 export default Router;

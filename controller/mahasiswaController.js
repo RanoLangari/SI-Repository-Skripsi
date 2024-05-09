@@ -313,7 +313,7 @@ export const getProfile = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const { id } = req.user;
-    const { nim, nama, jurusan, semester, status_kelulusan, email } = req.body;
+    const { nim, nama, jurusan, semester, email } = req.body;
     const checkNim = await db
       .collection("mahasiswa")
       .where("nim", "==", nim)
@@ -341,7 +341,6 @@ export const updateProfile = async (req, res) => {
       nama: data.nama,
       jurusan: data.jurusan,
       semester: data.semester,
-      status_kelulusan: data.status_kelulusan,
       email: data.email,
     };
     const result = await query.update({
@@ -349,7 +348,6 @@ export const updateProfile = async (req, res) => {
       nama: nama || mapingData.nama,
       jurusan: jurusan || mapingData.jurusan,
       semester: semester || mapingData.semester,
-      status_kelulusan: status_kelulusan || mapingData.status_kelulusan,
       email: email || mapingData.email,
     });
     if (!result) return helper.responseError(res, 400, "Gagal update profile");
