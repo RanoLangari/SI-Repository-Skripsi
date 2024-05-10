@@ -141,7 +141,7 @@ export const deleteSkripsi = async (req, res) => {
       "skripsi.abstract": FieldValue.delete(),
     });
     const data = snapshot.data();
-    emailService.sendEmailSkripsiReject(data.email);
+    emailService.sendEmailSkripsiReject(data.email, alasan);
     return helper.response(res, 200, "Status skripsi Ditolak", data);
   } catch (error) {
     console.log("Error in deleteSkripsi: ", error);
@@ -670,5 +670,43 @@ export const deleteSkripsiById = async (req, res) => {
     return helper.responseSuccess(res, 200, "Data skripsi berhasil dihapus");
   } catch (error) {
     console.log("Error in deleteSkripsiById: ", error);
+  }
+};
+
+export const getDataForChartAdmin = async (_, res) => {
+  try {
+    const query = db.collection("mahasiswa");
+    const snapshot = await query.get();
+    const data = snapshot.docs.map((doc) => ({
+      ...doc.data(),
+    }));
+    const result = {
+      totalMahasiswa: data.length,
+      totalMahasiswaLulus: data.filter(
+        (item) => item.status_kelulusan === "Lulus"
+      ).length,
+      totalMahasiswaBelumLulus: data.filter(
+        (item) => item.status_kelulusan === "Belum Lulus"
+      ).length,
+      totalMahasiswaSkripsi: data.filter((item) => item.skripsi !== undefined)
+        .length,
+      totalMahasiswaSkripsiTerverifikasi: data.filter(
+        (item) =>
+          item.skripsi !== undefined && item.skripsi.status === "Terverifikasi"
+      ).length,
+      totalMahasiswaSkripsiProses: data.filter(
+        (item) => item.skripsi !== undefined && item.skripsi.status === "proses"
+      ).length,
+      totalMahasiswaSkripsiDitolak: data.filter(
+        (item) =>
+          item.skripsi !== undefined && item.skripsi.status === "Ditolak"
+      ).length,
+      totalMahasiswaBelumUploadSkripsi: data.filter(
+        (item) => item.skripsi === undefined
+      ).length,
+    };
+    return helper.response(res, 200, "Berhasil mendapatkan data", result);
+  } catch (error) {
+    console.log("Error in getDataForChartAdmin: ", error);
   }
 };

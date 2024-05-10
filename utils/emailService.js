@@ -1,5 +1,5 @@
 import Mailgun from "mailgun.js";
-import FormData from "form-data";   
+import FormData from "form-data";
 
 class EmailService {
   constructor() {
@@ -74,7 +74,7 @@ class EmailService {
     await this.sendEmail(email, "OTP Reset Password", html);
   }
 
-  async sendEmailSkripsiVerified(email){
+  async sendEmailSkripsiVerified(email) {
     const html = `<html>
     <head>
       <style>
@@ -124,7 +124,7 @@ class EmailService {
     await this.sendEmail(email, "Status Skripsi", html);
   }
 
-  async sendEmailSkripsiReject(email){
+  async sendEmailSkripsiReject(email, alasan) {
     const html = `<html>
     <head>
       <style>
@@ -161,7 +161,7 @@ class EmailService {
           />
           <h1>Sistem Informasi Repository Skripsi FEB UNDANA</h1>
           <div style="margin-top: 70px">
-            <p>Skripsi Anda Telah Ditolak</p> 
+            <p>Skripsi Anda Telah Ditolak dikarenakan ${alasan}</p> 
             <p>Silahkan upload kembali skripsi anda</p>
           </div>
         </div>
@@ -176,8 +176,4 @@ class EmailService {
   }
 }
 
-
 export default EmailService;
-
-
-
