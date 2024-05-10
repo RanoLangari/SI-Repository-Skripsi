@@ -673,7 +673,7 @@ export const deleteSkripsiById = async (req, res) => {
   }
 };
 
-export const getDataForChartAdmin = async (_, res) => {
+export const getDataMahasiswaForChartAdmin = async (_, res) => {
   try {
     const query = db.collection("mahasiswa");
     const snapshot = await query.get();
@@ -681,29 +681,40 @@ export const getDataForChartAdmin = async (_, res) => {
       ...doc.data(),
     }));
     const result = {
-      totalMahasiswa: data.length,
-      totalMahasiswaLulus: data.filter(
-        (item) => item.status_kelulusan === "Lulus"
-      ).length,
-      totalMahasiswaBelumLulus: data.filter(
-        (item) => item.status_kelulusan === "Belum Lulus"
-      ).length,
-      totalMahasiswaSkripsi: data.filter((item) => item.skripsi !== undefined)
-        .length,
-      totalMahasiswaSkripsiTerverifikasi: data.filter(
-        (item) =>
-          item.skripsi !== undefined && item.skripsi.status === "Terverifikasi"
-      ).length,
-      totalMahasiswaSkripsiProses: data.filter(
-        (item) => item.skripsi !== undefined && item.skripsi.status === "proses"
-      ).length,
-      totalMahasiswaSkripsiDitolak: data.filter(
-        (item) =>
-          item.skripsi !== undefined && item.skripsi.status === "Ditolak"
-      ).length,
-      totalMahasiswaBelumUploadSkripsi: data.filter(
-        (item) => item.skripsi === undefined
-      ).length,
+      dataMhsSkripsi: {
+        totalMahasiswa: data.length,
+        totalMahasiswaLulus: data.filter(
+          (item) => item.status_kelulusan === "Lulus"
+        ).length,
+        totalMahasiswaBelumLulus: data.filter(
+          (item) => item.status_kelulusan === "Belum Lulus"
+        ).length,
+      },
+      dataMhsJurusan: {
+        totalMhsAkuntansi: data.filter((item) => item.jurusan == "Akuntansi")
+          .length,
+        totalMhsManajemen: data.filter((item) => item.jurusan == "Manajemen")
+          .length,
+        totalMhsEkBang: data.filter(
+          (item) => item.jurusan == "Ekonomi Pembangunan"
+        ).length,
+      },
+
+      dataSkripsi: {
+        totalSkripsi: data.filter((item) => item.skripsi !== undefined).length,
+        totalSkripsiProses: data.filter(
+          (item) => item.skripsi && item.skripsi.status === "proses"
+        ).length,
+        totalSkripsiTerverifikasi: data.filter(
+          (item) => item.skripsi && item.skripsi.status === "Terverifikasi"
+        ).length,
+        totalSkripsiDitolak: data.filter(
+          (item) => item.skripsi && item.skripsi.status === "Ditolak"
+        ).length,
+        totalSkripsiDiajukanAdmin: data.filter(
+          (item) => item.skripsi && item.skripsi.skripsi_url == undefined
+        ).length,
+      },
     };
     return helper.response(res, 200, "Berhasil mendapatkan data", result);
   } catch (error) {

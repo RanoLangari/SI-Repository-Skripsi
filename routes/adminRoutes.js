@@ -26,7 +26,7 @@ import {
   getSkripsiById,
   updateSkripsiById,
   deleteSkripsiById,
-  getDataForChartAdmin,
+  getDataMahasiswaForChartAdmin,
 } from "../controller/adminController.js";
 import { isAuthorized } from "../utils/auth.js";
 import Express from "express";
@@ -64,5 +64,9 @@ Router.post("/upload-data-skripsi", isAuthorized, UploadDataSkripsi);
 Router.get("/get-skripsi/:id", isAuthorized, getSkripsiById);
 Router.put("/update-skripsi/:id", isAuthorized, updateSkripsiById);
 Router.delete("/delete-skripsi/:id", isAuthorized, deleteSkripsiById);
-Router.get("/get-data-for-chart", isAuthorized, getDataForChartAdmin);
+Router.get(
+  "/get-data-mhs-for-chart",
+  isAuthorized,
+  getDataMahasiswaForChartAdmin
+);
 export default Router;
