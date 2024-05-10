@@ -7,10 +7,6 @@ import {
   deleteSkripsi,
   changePassword,
   updateProfile,
-  getDosen,
-  tambahDosen,
-  deleteDosen,
-  editDosen,
   lupaPassword,
   verifyOtp,
   resetpassword,
@@ -49,10 +45,6 @@ Router.put("/konfirmasi-skripsi/:id", isAuthorized, KonfirmasiSkripsi);
 Router.put("/delete-skripsi/:id", isAuthorized, deleteSkripsi);
 Router.put("/change-password", isAuthorized, changePassword);
 Router.put("/profile", isAuthorized, updateProfile);
-Router.get("/get-dosen", isAuthorized, getDosen);
-Router.post("/add-dosen", isAuthorized, tambahDosen);
-Router.delete("/delete-dosen/:id", isAuthorized, deleteDosen);
-Router.put("/edit-dosen/:id", isAuthorized, editDosen);
 Router.get("/get-all-mahasiswa", isAuthorized, getAllMahasiswa);
 Router.get("/get-all-skripsi", isAuthorized, getAllSkripsi);
 Router.post("/import-excel-mhs", isAuthorized, importExcelMhs);
