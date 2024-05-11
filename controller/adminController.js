@@ -142,7 +142,12 @@ export const deleteSkripsi = async (req, res) => {
     });
     const data = snapshot.data();
     emailService.sendEmailSkripsiReject(data.email, alasan);
-    return helper.response(res, 200, "Status skripsi Ditolak", data);
+    return helper.response(
+      res,
+      200,
+      `Status skripsi Ditolak dengan alasan ${alasan}`,
+      data
+    );
   } catch (error) {
     console.log("Error in deleteSkripsi: ", error);
   }
@@ -365,6 +370,18 @@ export const importExcelMhs = async (req, res) => {
 
     data.splice(0, 2);
     for (let item of data) {
+      if (
+        item.nim === undefined ||
+        item.nama === undefined ||
+        item.jurusan === undefined
+      ) {
+        return helper.responseError(
+          res,
+          400,
+          "Data tidak valid, mohon periksa kembali file excel anda"
+        );
+      }
+
       const checkNim = await db
         .collection("mahasiswa")
         .where("nim", "==", item.nim.toString())
@@ -469,11 +486,11 @@ export const tambahDataSkripsi = async (req, res) => {
     if (snapshot.empty)
       return helper.responseError(res, 400, "NIM tidak terdaftar");
     if (snapshot.docs[0].data().skripsi !== undefined)
-      if (snapshot.docs[0].data().skripsi.status === "Terverifikasi")
+      if (snapshot.docs[0].data().skripsi)
         return helper.responseError(
           res,
           400,
-          `Data Skripsi Mahasiswa dengan NIM ${nim} Telah terverifikasi`
+          `Data Skripsi Mahasiswa dengan NIM ${nim} Telah Terdaftar`
         );
     const data = {
       status_kelulusan: "Lulus",
@@ -520,7 +537,9 @@ export const UploadDataSkripsi = async (req, res) => {
     const batch = db.batch();
     for (const item of data) {
       const query = db.collection("mahasiswa");
-      const snapshot = await query.where("nim", "==", item.nim).get();
+      const snapshot = await query
+        .where("nim", "==", item.nim.toString())
+        .get();
       if (snapshot.empty) {
         return helper.responseError(
           res,
@@ -529,11 +548,11 @@ export const UploadDataSkripsi = async (req, res) => {
         );
       }
       const result = snapshot.docs[0].data();
-      if (result.skripsi.status === "Terverifikasi") {
+      if (result.skripsi) {
         return helper.responseError(
           res,
           400,
-          `Data Skripsi Mahasiswa dengan NIM ${item.nim} Telah terverifikasi`
+          `Data Skripsi Mahasiswa dengan NIM ${item.nim} Sudah Terdaftar`
         );
       }
       await query.doc(snapshot.docs[0].id).update({
@@ -576,11 +595,13 @@ export const getSkripsiById = async (req, res) => {
 export const updateSkripsiById = async (req, res) => {
   try {
     const id = req.params.id;
-    const { pembimbing1, pembimbing2, penguji, judul_skripsi } = req.body;
+    const { nim, pembimbing1, pembimbing2, penguji, judul_skripsi } = req.body;
     const query = db.collection("mahasiswa").doc(id);
     const snapshot = await query.get();
     if (!snapshot.exists)
       return helper.responseError(res, 400, "Data tidak ditemukan");
+    if (snapshot.data().nim != nim)
+      return helper.responseError(res, 400, "NIM tidak valid");
     await query.update({
       "skripsi.pembimbing1": pembimbing1,
       "skripsi.pembimbing2": pembimbing2,
