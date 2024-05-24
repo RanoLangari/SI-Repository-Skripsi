@@ -112,7 +112,7 @@ export const KonfirmasiSkripsi = async (req, res) => {
     if (!snapshot.exists)
       return helper.responseError(res, 400, "Data tidak ditemukan");
     const data = snapshot.data();
-    emailService.sendEmailSkripsiVerified(data.email);
+    data.email && emailService.sendEmailSkripsiVerified(data.email);
     await query.update({
       "skripsi.status": "Terverifikasi",
     });
@@ -141,7 +141,7 @@ export const deleteSkripsi = async (req, res) => {
       "skripsi.abstract": FieldValue.delete(),
     });
     const data = snapshot.data();
-    emailService.sendEmailSkripsiReject(data.email, alasan);
+    data.email && emailService.sendEmailSkripsiReject(data.email, alasan);
     return helper.response(
       res,
       200,
@@ -334,76 +334,23 @@ export const getAllSkripsi = async (_, res) => {
 
 export const importExcelMhs = async (req, res) => {
   try {
-    const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth() + 1;
-
-    if (!req.files || Object.keys(req.files).length === 0)
+    if (!req.files || Object.keys(req.files).length === 0) {
       return helper.responseError(
         res,
         400,
         "Mohon Masukan File yang Ingin Diupload dan Pastikan Sudah Sesuai Dengan Template"
       );
+    }
 
     const file = req.files.file;
-    const workbook = new exceljs.Workbook();
-    await workbook.xlsx.load(file.data);
-    const worksheet = workbook.worksheets[0];
-    let data = [];
-
-    worksheet.eachRow((row, rowNumber) => {
-      if (rowNumber !== 1) {
-        let semester =
-          currentYear - parseInt(`20${row.values[7]}`.substring(0, 4), 10);
-        semester *= currentMonth > 6 ? 1.5 : 2;
-        let Jurusan = helper.capitalizeFirstLetter(row.values[9]);
-        let nama = helper.capitalizeFirstLetter(row.values[8]);
-        data.push({
-          nim: row.values[7],
-          nama: nama,
-          jurusan: Jurusan,
-          password: bcrypt.hashSync(`FEB_${row.values[7]}`, saltRounds),
-          status_kelulusan: "Belum Lulus",
-          semester: semester.toString(),
-        });
-      }
-    });
-
+    const data = await helper.processExcelFileDataMhs(file.data);
     data.splice(0, 2);
-    for (let item of data) {
-      if (
-        item.nim === undefined ||
-        item.nama === undefined ||
-        item.jurusan === undefined
-      ) {
-        return helper.responseError(
-          res,
-          400,
-          "Data tidak valid, mohon periksa kembali file excel anda"
-        );
-      }
+    await helper.validateDataMhs(data);
+    await helper.batchAddDataMhs(data);
 
-      const checkNim = await db
-        .collection("mahasiswa")
-        .where("nim", "==", item.nim.toString())
-        .get();
-      if (!checkNim.empty)
-        return helper.responseError(
-          res,
-          400,
-          `NIM ${item.nim} sudah terdaftar`
-        );
-    }
-
-    const batch = db.batch();
-    for (let item of data) {
-      const query = db.collection("mahasiswa");
-      await query.add(item);
-    }
-    await batch.commit();
     return helper.responseSuccess(res, 200, "Data mahasiswa berhasil diupload");
   } catch (error) {
-    console.log("Error in importExcelMhs: ", error);
-    return helper.responseError(res, 500, "Terjadi kesalahan server");
+    return helper.responseError(res, 500, error.message);
   }
 };
 
@@ -414,7 +361,7 @@ export const addMahasiswa = async (req, res) => {
     let { nim, nama, jurusan } = req.body;
     const checkNim = await db
       .collection("mahasiswa")
-      .where("nim", "==", nim)
+      .where("nim", "==", Number(nim))
       .get();
     if (!checkNim.empty)
       return helper.responseError(res, 400, "NIM sudah terdaftar");
@@ -423,7 +370,7 @@ export const addMahasiswa = async (req, res) => {
     currentMonth > 6 ? (semester *= 1.5) : (semester *= 2);
     nama = helper.capitalizeFirstLetter(nama);
     const data = {
-      nim,
+      nim: Number(nim),
       nama,
       jurusan,
       semester: semester.toString(),
@@ -455,7 +402,7 @@ export const editDataMahasiswa = async (req, res) => {
     nama = helper.capitalizeFirstLetter(nama);
     await query.update({
       nama,
-      nim,
+      nim: Number(nim),
       jurusan,
     });
     return helper.responseSuccess(res, 200, "Data Mahasiswa Berhasil Diubah");
@@ -482,7 +429,7 @@ export const tambahDataSkripsi = async (req, res) => {
   try {
     let { nim, pembimbing1, pembimbing2, penguji, judul_skripsi } = req.body;
     const query = db.collection("mahasiswa");
-    const snapshot = await query.where("nim", "==", nim).get();
+    const snapshot = await query.where("nim", "==", Number(nim)).get();
     if (snapshot.empty)
       return helper.responseError(res, 400, "NIM tidak terdaftar");
     if (snapshot.docs[0].data().skripsi !== undefined)
@@ -516,56 +463,20 @@ export const tambahDataSkripsi = async (req, res) => {
 
 export const UploadDataSkripsi = async (req, res) => {
   try {
-    const file = req.files.file;
-    const workbook = new exceljs.Workbook();
-    await workbook.xlsx.load(file.data);
-    const worksheet = workbook.worksheets[0];
-    let data = [];
-    worksheet.eachRow((row, rowNumber) => {
-      if (rowNumber !== 1) {
-        let judul_skripsi = helper.capitalizeFirstLetter(row.values[11]);
-        data.push({
-          nim: row.values[7],
-          pembimbing1: row.values[8],
-          pembimbing2: row.values[9],
-          penguji: row.values[10],
-          judul_skripsi,
-        });
-      }
-    });
-    data.splice(0, 2);
-    const batch = db.batch();
-    for (const item of data) {
-      const query = db.collection("mahasiswa");
-      const snapshot = await query
-        .where("nim", "==", item.nim.toString())
-        .get();
-      if (snapshot.empty) {
-        return helper.responseError(
-          res,
-          400,
-          `NIM ${item.nim} tidak terdaftar dalam sistem`
-        );
-      }
-      const result = snapshot.docs[0].data();
-      if (result.skripsi) {
-        return helper.responseError(
-          res,
-          400,
-          `Data Skripsi Mahasiswa dengan NIM ${item.nim} Sudah Terdaftar`
-        );
-      }
-      await query.doc(snapshot.docs[0].id).update({
-        status_kelulusan: "Lulus",
-        skripsi: {
-          pembimbing1: item.pembimbing1,
-          pembimbing2: item.pembimbing2,
-          penguji: item.penguji,
-          judul_skripsi: item.judul_skripsi,
-        },
-      });
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return helper.responseError(
+        res,
+        400,
+        "Mohon Masukan File yang Ingin Diupload dan Pastikan Sudah Sesuai Dengan Template"
+      );
     }
-    await batch.commit();
+
+    const file = req.files.file;
+    const data = await helper.processSkripsiFile(file.data);
+    data.splice(0, 2); // Remove header rows
+
+    await helper.updateSkripsiData(data);
+
     return helper.responseSuccess(res, 200, "Data skripsi berhasil diupload");
   } catch (error) {
     console.log("Error in UploadDataSkripsi: ", error);

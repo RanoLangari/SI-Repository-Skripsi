@@ -15,49 +15,11 @@ const helper = new Helper();
 dotenv.config();
 const saltRounds = 8;
 
-export const registerMahasiswa = async (req, res) => {
-  try {
-    const { nim, nama, email, jurusan, semester, status_kelulusan, password } =
-      req.body;
-    const cekNim = await db
-      .collection("mahasiswa")
-      .where("nim", "==", nim)
-      .get();
-    if (!cekNim.empty)
-      return helper.responseError(res, 400, "NIM sudah terdaftar");
-    const cekEmail = await db
-      .collection("mahasiswa")
-      .where("email", "==", email)
-      .get();
-    if (!cekEmail.empty)
-      return helper.responseError(res, 400, "Email sudah terdaftar");
-    const hashPassword = bcrypt.hashSync(password, saltRounds);
-    const query = db.collection("mahasiswa");
-    const data = {
-      nim,
-      nama,
-      jurusan,
-      email,
-      semester,
-      status_kelulusan,
-      password: hashPassword,
-    };
-    const snapshot = await query.where("nim", "==", nim).get();
-    if (!snapshot.empty)
-      return helper.responseError(res, 400, "NIM sudah terdaftar");
-    const result = await query.add(data);
-    if (!result) return helper.responseError(res, 400, "Register gagal");
-    return helper.responseSuccess(res, 200, "Register berhasil");
-  } catch (error) {
-    console.log("Error in registerMahasiswa:", error);
-  }
-};
-
 export const loginMahasiswa = async (req, res) => {
   try {
     const { nim, password } = req.body;
     const query = db.collection("mahasiswa");
-    const snapshot = await query.where("nim", "==", nim).get();
+    const snapshot = await query.where("nim", "==", Number(nim)).get();
     if (snapshot.empty)
       return helper.responseError(res, 400, "NIM tidak terdaftar");
     const userData = snapshot.docs[0].data();
@@ -170,7 +132,7 @@ export const getHalfSkripsi = async (req, res) => {
     const query = db.collection("mahasiswa");
     const snapshot = await query.where("skripsi", "!=", null).get();
     if (snapshot.empty)
-      return helper.responseError(res, 400, "Data tidak ditemukan");
+      return helper.responseError(res, 200, "Data tidak ditemukan");
     const filterResult = snapshot.docs
       .filter((item) => item.data().skripsi.status === "Terverifikasi")
       .map((doc) => ({
@@ -292,7 +254,7 @@ export const getProfile = async (req, res) => {
       return helper.responseError(res, 400, "Data tidak ditemukan");
     const data = snapshot.data();
     const mapData = {
-      nim: data.nim,
+      nim: Number(data.nim),
       nama: data.nama,
       jurusan: data.jurusan,
       semester: data.semester,
@@ -319,7 +281,7 @@ export const updateProfile = async (req, res) => {
     const { nim, nama, jurusan, semester, email } = req.body;
     const checkNim = await db
       .collection("mahasiswa")
-      .where("nim", "==", nim)
+      .where("nim", "==", Number(nim))
       .get();
     if (!checkNim.empty) {
       if (checkNim.docs[0].id !== id)
@@ -340,14 +302,14 @@ export const updateProfile = async (req, res) => {
       return responseError(res, 400, "Data tidak ditemukan");
     const data = snapshot.data();
     const mapingData = {
-      nim: data.nim,
+      nim: Number(data.nim),
       nama: data.nama,
       jurusan: data.jurusan,
       semester: data.semester,
       email: data.email,
     };
     const result = await query.update({
-      nim: nim || mapingData.nim,
+      nim: Number(nim) || mapingData.nim,
       nama: nama || mapingData.nama,
       jurusan: jurusan || mapingData.jurusan,
       semester: semester || mapingData.semester,

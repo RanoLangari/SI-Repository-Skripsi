@@ -7,4 +7,11 @@ const db = new Firestore({
   keyFilename: process.env.KEY_FILENAME,
 });
 
+if (process.env.NODE_ENV === "development") {
+  db.settings({
+    host: "127.0.0.1:5125",
+    ssl: false,
+  });
+}
+
 export default db;

@@ -1,5 +1,4 @@
 import {
-  registerMahasiswa,
   loginMahasiswa,
   uploadSkripsi,
   getHalfSkripsi,
@@ -21,7 +20,6 @@ import Express from "express";
 
 const Router = Express.Router();
 
-Router.post("/register", registerMahasiswa);
 Router.post("/login", loginMahasiswa);
 Router.post("/lupa-password", lupaPassword);
 Router.post("/verify-otp", verifyOtp);
