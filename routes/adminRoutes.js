@@ -28,6 +28,7 @@ import {
   getDataMahasiswaForChartAdmin,
   getDosen,
   tambahDosen,
+  importExcelDosen,
   editDosen,
   deleteDosen,
 } from "../controller/adminController.js";
@@ -72,6 +73,7 @@ Router.get(
   getDataMahasiswaForChartAdmin
 );
 Router.get("/get-dosen", isAuthorized, getDosen);
+Router.post("/import-excel-dosen", isAuthorized, importExcelDosen);
 Router.post("/add-dosen", isAuthorized, tambahDosen);
 Router.delete("/delete-dosen/:id", isAuthorized, deleteDosen);
 Router.put("/edit-dosen/:id", isAuthorized, editDosen);

@@ -112,6 +112,26 @@ export const tambahDosen = async (req, res) => {
   }
 };
 
+export const importExcelDosen = async (req, res) => {
+  try {
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return helper.responseError(
+        res,
+        400,
+        "Mohon Masukan File yang Ingin Diupload dan Pastikan Sudah Sesuai Dengan Template"
+      );
+    }
+
+    const file = req.files.file;
+    const data = await helper.processExcelFileDataDosen(file.data);
+    await helper.batchAddDataDosen(data);
+
+    return helper.responseSuccess(res, 200, "Data mahasiswa berhasil diupload");
+  } catch (error) {
+    return helper.responseError(res, 500, error.message);
+  }
+};
+
 export const deleteDosen = async (req, res) => {
   try {
     const id = req.params.id;
@@ -406,7 +426,6 @@ export const importExcelMhs = async (req, res) => {
 
     const file = req.files.file;
     const data = await helper.processExcelFileDataMhs(file.data);
-    data.splice(0, 2);
     await helper.validateDataMhs(data);
     await helper.batchAddDataMhs(data);
 

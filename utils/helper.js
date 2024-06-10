@@ -30,6 +30,35 @@ class Helper {
       })
       .join(" ");
   }
+  async processExcelFileDataDosen(fileData) {
+    const workbook = new exceljs.Workbook();
+    await workbook.xlsx.load(fileData);
+    const worksheet = workbook.worksheets[0];
+    const data = [];
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber > 8) {
+        const nama = this.capitalizeFirstLetter(row.values[8].toString());
+        const jurusan = this.capitalizeFirstLetter(row.values[9].toString());
+        data.push({
+          nama,
+          jurusan: jurusan,
+        });
+      }
+    });
+
+    return data;
+  }
+  async batchAddDataDosen(data) {
+    const batch = db.batch();
+    const query = db.collection("dosen");
+
+    for (let item of data) {
+      const docRef = query.doc();
+      batch.set(docRef, item);
+    }
+
+    await batch.commit();
+  }
   async processExcelFileDataMhs(fileData) {
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
