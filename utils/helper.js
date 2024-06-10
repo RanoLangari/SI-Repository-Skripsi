@@ -37,13 +37,18 @@ class Helper {
     await workbook.xlsx.load(fileData);
     const worksheet = workbook.worksheets[0];
     const data = [];
-
     worksheet.eachRow((row, rowNumber) => {
-      if (rowNumber !== 1) {
+      if (rowNumber > 8) {
         let semester =
           currentYear - parseInt(`20${row.values[7]}`.substring(0, 4), 10);
         semester = Math.ceil(semester * (currentMonth > 6 ? 1.5 : 2));
         const jurusan = this.capitalizeFirstLetter(row.values[9].toString());
+        const listJurusan = ["Manajemen", "Akuntansi", "Ekonomi Pembangunan"];
+        if (!listJurusan.includes(jurusan)) {
+          throw new Error(
+            `Jurusan ${jurusan} pada NIM ${row.values[7]} tidak valid. Mohon periksa kembali file excel anda`
+          );
+        }
         const nama = this.capitalizeFirstLetter(row.values[8].toString());
         data.push({
           nim: row.values[7],
@@ -69,7 +74,7 @@ class Helper {
 
       const checkNim = await db
         .collection("mahasiswa")
-        .where("nim", "==", item.nim.toString())
+        .where("nim", "==", item.nim)
         .get();
       if (!checkNim.empty) {
         throw new Error(`NIM ${item.nim} sudah terdaftar`);

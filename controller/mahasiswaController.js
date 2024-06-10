@@ -251,7 +251,7 @@ export const getProfile = async (req, res) => {
     const query = db.collection("mahasiswa").doc(id);
     const snapshot = await query.get();
     if (!snapshot.exists)
-      return helper.responseError(res, 400, "Data tidak ditemukan");
+      return helper.responseError(res, 404, "Data tidak ditemukan");
     const data = snapshot.data();
     const mapData = {
       nim: Number(data.nim),

@@ -80,7 +80,69 @@ export const getAdmin = async (req, res) => {
     console.log("Error in getAdmin: ", error);
   }
 };
+export const getDosen = async (_, res) => {
+  try {
+    const query = db.collection("dosen");
+    const snapshot = await query.get();
+    const result = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    return helper.response(res, 200, "Berhasil mendapatkan data dosen", result);
+  } catch (error) {
+    console.log("Error in getDosen: ", error);
+  }
+};
 
+export const tambahDosen = async (req, res) => {
+  try {
+    const { nama, jurusan } = req.body;
+    const query = db.collection("dosen");
+    const data = {
+      nama,
+      jurusan,
+    };
+    const result = await query.add(data);
+    return helper.response(res, 200, "Dosen berhasil ditambahkan", {
+      id: result.id,
+      ...data,
+    });
+  } catch (error) {
+    console.log("Error in tambahDosen: ", error);
+  }
+};
+
+export const deleteDosen = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const query = db.collection("dosen").doc(id);
+    const snapshot = await query.get();
+    if (!snapshot.exists)
+      return helper.responseError(res, 400, "Dosen tidak ditemukan");
+    await query.delete();
+    return helper.responseSuccess(res, 200, "Dosen berhasil dihapus");
+  } catch (error) {
+    console.log("Error in deleteDosen: ", error);
+  }
+};
+
+export const editDosen = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { nama, jurusan } = req.body;
+    const query = db.collection("dosen").doc(id);
+    const snapshot = await query.get();
+    if (!snapshot.exists)
+      return helper.responseError(res, 400, "Dosen tidak ditemukan");
+    await query.update({
+      nama,
+      jurusan,
+    });
+    return helper.responseSuccess(res, 200, "Dosen berhasil diupdate");
+  } catch (error) {
+    console.log("Error in editDosen: ", error);
+  }
+};
 export const getSkripsiProcess = async (req, res) => {
   try {
     const query = db.collection("mahasiswa");
@@ -425,6 +487,62 @@ export const deleteMahasiswa = async (req, res) => {
   }
 };
 
+export const cekNimAddMahasiswa = async (req, res) => {
+  try {
+    const { nim } = req.body;
+    const query = db.collection("mahasiswa").where("nim", "==", Number(nim));
+    const snapshot = await query.get();
+    if (snapshot.empty)
+      return helper.responseError(
+        res,
+        400,
+        `Mahasiswa Dengan NIM ${nim} Tidak Terdaftar`
+      );
+    const data = snapshot.docs[0].id;
+    if (snapshot.docs[0].data().status_kelulusan === "Lulus")
+      return helper.responseError(
+        res,
+        400,
+        `Data Skripsi Mahasiswa dengan NIM ${nim} Telah Terdaftar`
+      );
+    return helper.response(res, 200, "Data Ditemukan", data);
+  } catch (error) {
+    console.log("Error in cekNimAddMahasiswa: ", error);
+  }
+};
+
+export const getMahasiswaAddSkripsi = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const query = db.collection("mahasiswa").doc(id);
+    const snapshot = await query.get();
+    if (!snapshot.exists)
+      return helper.responseError(res, 400, "Data tidak ditemukan");
+    if (snapshot.data().status_kelulusan === "Lulus")
+      return helper.responseError(res, 400, "Data skripsi sudah terdaftar");
+    const data = {
+      nim: snapshot.data().nim,
+      jurusan: snapshot.data().jurusan,
+    };
+    return helper.response(res, 200, "Data ditemukan", data);
+  } catch (error) {
+    console.log("Error in getMahasiswaAddSkripsi: ", error);
+  }
+};
+
+export const getDosenByJurusan = async (req, res) => {
+  try {
+    const { jurusan } = req.query;
+    const query = db.collection("dosen").where("jurusan", "==", jurusan);
+    const snapshot = await query.get();
+    const result = snapshot.docs.map((doc) => ({
+      ...doc.data(),
+    }));
+    return helper.response(res, 200, "Data dosen ditemukan", result);
+  } catch (error) {
+    console.log("Error in getDosenByJurusan: ", error);
+  }
+};
 export const tambahDataSkripsi = async (req, res) => {
   try {
     let { nim, pembimbing1, pembimbing2, penguji, judul_skripsi } = req.body;
@@ -473,13 +591,13 @@ export const UploadDataSkripsi = async (req, res) => {
 
     const file = req.files.file;
     const data = await helper.processSkripsiFile(file.data);
-    data.splice(0, 2); // Remove header rows
+    data.splice(0, 2);
 
     await helper.updateSkripsiData(data);
 
     return helper.responseSuccess(res, 200, "Data skripsi berhasil diupload");
   } catch (error) {
-    console.log("Error in UploadDataSkripsi: ", error);
+    return helper.responseError(res, 500, error.message);
   }
 };
 
@@ -491,6 +609,7 @@ export const getSkripsiById = async (req, res) => {
     if (!snapshot.exists)
       return helper.responseError(res, 400, "Data tidak ditemukan");
     const data = {
+      jurusan: snapshot.data().jurusan,
       nim: snapshot.data().nim,
       judul_skripsi: snapshot.data().skripsi.judul_skripsi,
       pembimbing1: snapshot.data().skripsi.pembimbing1,
@@ -534,6 +653,7 @@ export const deleteSkripsiById = async (req, res) => {
       return helper.responseError(res, 400, "Data tidak ditemukan");
     await query.update({
       skripsi: FieldValue.delete(),
+      status_kelulusan: "Belum Lulus",
     });
     return helper.responseSuccess(res, 200, "Data skripsi berhasil dihapus");
   } catch (error) {
