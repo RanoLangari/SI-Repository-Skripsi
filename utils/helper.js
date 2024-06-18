@@ -39,6 +39,12 @@ class Helper {
       if (rowNumber > 8) {
         const nama = this.capitalizeFirstLetter(row.values[8].toString());
         const jurusan = this.capitalizeFirstLetter(row.values[9].toString());
+        const listJurusan = ["Manajemen", "Akuntansi", "Ekonomi Pembangunan"];
+        if (!listJurusan.includes(jurusan)) {
+          throw new Error(
+            `Jurusan ${jurusan} pada dosen dengan nama ${nama} tidak valid. Mohon periksa kembali file excel anda`
+          );
+        }
         data.push({
           nama,
           jurusan: jurusan,
@@ -46,6 +52,11 @@ class Helper {
       }
     });
 
+    if (data.length === 0) {
+      throw new Error(
+        "Data dosen pada file excel tidak ditemukan, mohon periksa kembali file excel anda"
+      );
+    }
     return data;
   }
   async batchAddDataDosen(data) {

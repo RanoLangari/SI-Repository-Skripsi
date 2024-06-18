@@ -125,8 +125,7 @@ export const importExcelDosen = async (req, res) => {
     const file = req.files.file;
     const data = await helper.processExcelFileDataDosen(file.data);
     await helper.batchAddDataDosen(data);
-
-    return helper.responseSuccess(res, 200, "Data mahasiswa berhasil diupload");
+    return helper.responseSuccess(res, 200, "Data dosen berhasil diupload");
   } catch (error) {
     return helper.responseError(res, 500, error.message);
   }
